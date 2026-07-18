@@ -1,0 +1,37 @@
+package com.keygenqt.vibe.action.bridge
+
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.MessageDialogBuilder
+import com.intellij.openapi.ui.Messages
+import com.keygenqt.vibe.action.bridge.SysBridge
+
+/**
+ * IntelliJ plugin implementation of the system bridge.
+ * Maps notifications and dialogs to native IntelliJ Platform APIs.
+ */
+class PluginSysBridge(val project: Project) : SysBridge {
+
+    /**
+     * Dispatches a native IntelliJ notification balloon.
+     */
+    override val showNotification: ((title: String, message: String) -> Unit) = { title, message ->
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("com.keygenqt.vibe.action")
+            .createNotification(title, message, NotificationType.INFORMATION)
+            .notify(project)
+    }
+
+    /**
+     * Invokes a native IntelliJ OK/Cancel confirmation dialog.
+     */
+    override val showConfirmDialog: ((title: String, message: String, onResult: (Boolean) -> Unit) -> Unit) =
+        { title, message, onResult ->
+            onResult(
+                MessageDialogBuilder.okCancel(title, message)
+                    .icon(Messages.getQuestionIcon())
+                    .ask(project)
+            )
+        }
+}

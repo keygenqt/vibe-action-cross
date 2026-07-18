@@ -1,0 +1,9 @@
+# Dependencies
+node_modules/
+productionExecutable
+
+# Build output
+*.vsix
+
+# macOS
+.DS_Store
