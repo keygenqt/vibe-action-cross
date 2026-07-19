@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.bridge
 
 import kotlinx.browser.window
@@ -34,8 +38,8 @@ class VsCodeApi(private val raw: dynamic) {
             kotlin.js.json(
                 Pair("target", target),
                 Pair("args", args),
-                Pair("requestId", requestId)
-            )
+                Pair("requestId", requestId),
+            ),
         )
     }
 }

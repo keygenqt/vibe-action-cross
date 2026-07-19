@@ -4,9 +4,9 @@
  */
 package com.keygenqt.vibe.action.bridge.view
 
-import com.keygenqt.vibe.action.view.main.MainViewBridge
+import com.keygenqt.vibe.action.view.history.HistoryViewBridge
 
 /**
- * IntelliJ plugin implementation of the Main view bridge.
+ * VS Code implementation of the History view bridge.
  */
-class PluginMainViewBridge : MainViewBridge
+class VsCodeHistoryViewBridge : HistoryViewBridge

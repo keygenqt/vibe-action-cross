@@ -1,5 +1,12 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.bridge
 
+import com.keygenqt.vibe.action.bridge.view.VsCodeAboutViewBridge
+import com.keygenqt.vibe.action.bridge.view.VsCodeHistoryDetailViewBridge
+import com.keygenqt.vibe.action.bridge.view.VsCodeHistoryViewBridge
 import com.keygenqt.vibe.action.bridge.view.VsCodeMainViewBridge
 import com.keygenqt.vibe.action.bridge.view.VsCodeSettingsViewBridge
 
@@ -27,6 +34,9 @@ data class VsCodeEnvironment(
         vws = hashMapOf(
             PlatformView.Main to VsCodeMainViewBridge(),
             PlatformView.Settings to VsCodeSettingsViewBridge(),
-        )
-    )
+            PlatformView.History to VsCodeHistoryViewBridge(),
+            PlatformView.HistoryDetail to VsCodeHistoryDetailViewBridge(),
+            PlatformView.About to VsCodeAboutViewBridge(),
+        ),
+    ),
 ) : Environment

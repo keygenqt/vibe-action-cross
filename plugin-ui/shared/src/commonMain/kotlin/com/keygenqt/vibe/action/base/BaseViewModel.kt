@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.base
 
 import com.keygenqt.vibe.action.bridge.Environment
@@ -14,7 +18,7 @@ import kotlinx.coroutines.cancel
  */
 open class BaseViewModel(
     val env: Environment,
-    val view: PlatformView
+    val view: PlatformView,
 ) {
     /**
      * ViewBridge for this ViewModel's platform view.

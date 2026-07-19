@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action
 
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -8,10 +12,10 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.keygenqt.vibe.action.bridge.PluginEnvironment
-import com.keygenqt.vibe.action.resources.IconBundle
 import com.keygenqt.vibe.action.InitApp
 import com.keygenqt.vibe.action.RootAppDispatcher
+import com.keygenqt.vibe.action.bridge.PluginEnvironment
+import com.keygenqt.vibe.action.resources.IconBundle
 import org.jetbrains.jewel.bridge.theme.SwingBridgeTheme
 import org.jetbrains.jewel.foundation.ExperimentalJewelApi
 import java.awt.BorderLayout
@@ -56,7 +60,7 @@ class PluginSidebar : ToolWindowFactory {
             setContent {
                 SwingBridgeTheme {
                     InitApp(
-                        PluginEnvironment(project)
+                        PluginEnvironment(project),
                     ) {
                         RootAppDispatcher()
                     }

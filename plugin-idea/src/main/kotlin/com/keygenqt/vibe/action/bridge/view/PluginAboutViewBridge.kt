@@ -4,9 +4,9 @@
  */
 package com.keygenqt.vibe.action.bridge.view
 
-import com.keygenqt.vibe.action.view.main.MainViewBridge
+import com.keygenqt.vibe.action.view.about.AboutViewBridge
 
 /**
- * IntelliJ plugin implementation of the Main view bridge.
+ * IntelliJ plugin implementation of the About view bridge.
  */
-class PluginMainViewBridge : MainViewBridge
+class PluginAboutViewBridge : AboutViewBridge

@@ -1,9 +1,14 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,7 +19,6 @@ import androidx.compose.ui.window.ComposeViewport
 import com.keygenqt.vibe.action.bridge.VsCodeEnvironment
 import kotlinx.browser.document
 import kotlinx.browser.window
-import androidx.compose.material3.Text
 
 /**
  * VS Code extension entry point (JS target) — mounts the Compose Multiplatform UI
@@ -36,11 +40,11 @@ fun main() {
             MaterialTheme {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "Not available outside the VS Code extension.",
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
             }
@@ -72,14 +76,14 @@ private fun VSExtensionTheme(content: @Composable () -> Unit) {
         primaryContainer = getThemeColor("--vscode-focusBorder", "#007fd4"),
         onBackground = getThemeColor("--vscode-foreground", "#cccccc"),
         onSurface = getThemeColor("--vscode-foreground", "#cccccc"),
-        onPrimary = getThemeColor("--vscode-strongForeground", "#ffffff")
+        onPrimary = getThemeColor("--vscode-strongForeground", "#ffffff"),
     )
 
     // Apply the dynamic palette
     MaterialTheme(colorScheme = vsCodeDynamicPalette) {
         Surface(
             color = MaterialTheme.colorScheme.background,
-            content = content
+            content = content,
         )
     }
 }
@@ -87,9 +91,7 @@ private fun VSExtensionTheme(content: @Composable () -> Unit) {
 /**
  * Checks if running inside a VS Code WebView sandbox.
  */
-private fun isVsCodeWebView(): Boolean {
-    return js("typeof acquireVsCodeApi !== 'undefined'") as Boolean
-}
+private fun isVsCodeWebView(): Boolean = js("typeof acquireVsCodeApi !== 'undefined'") as Boolean
 
 /**
  * Parses a hex color string (3, 6, or 8 chars) into an ARGB Long value.

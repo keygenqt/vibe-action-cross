@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.components
 
 import androidx.compose.runtime.Composable
@@ -18,7 +22,7 @@ actual object PlatformComponents {
     actual fun Button(
         onClick: () -> Unit,
         modifier: Modifier,
-        content: @Composable () -> Unit
+        content: @Composable () -> Unit,
     ): (@Composable () -> Unit)? {
         if (ViewEnvironment.current.platform != Platform.IntellJPlugin) return null
         return {

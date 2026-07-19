@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
  * SPDX-License-Identifier: Apache-2.0
  */
-package com.keygenqt.vibe.action.view.settings
+package com.keygenqt.vibe.action.view.history
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -11,12 +11,13 @@ import com.keygenqt.vibe.action.components.Components.Text
 import org.koin.compose.koinInject
 
 @Composable
-fun SettingsView(
-    viewModel: SettingsViewModel = koinInject<SettingsViewModel>(),
+fun HistoryView(
+    viewModel: HistoryViewModel = koinInject<HistoryViewModel>(),
     onBack: () -> Unit = {},
+    onOpenDetail: (runId: String) -> Unit = {},
 ) {
     Column {
-        Text("Settings — @todo")
+        Text("History — @todo")
         Button(onClick = onBack) { Text("Back") }
     }
 }

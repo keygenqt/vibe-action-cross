@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.bridge
 
 import com.intellij.notification.NotificationGroupManager
@@ -5,7 +9,6 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageDialogBuilder
 import com.intellij.openapi.ui.Messages
-import com.keygenqt.vibe.action.bridge.SysBridge
 
 /**
  * IntelliJ plugin implementation of the system bridge.
@@ -31,7 +34,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
             onResult(
                 MessageDialogBuilder.okCancel(title, message)
                     .icon(Messages.getQuestionIcon())
-                    .ask(project)
+                    .ask(project),
             )
         }
 }

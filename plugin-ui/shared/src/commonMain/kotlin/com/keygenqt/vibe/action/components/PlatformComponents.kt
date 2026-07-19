@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.components
 
 import androidx.compose.runtime.Composable
@@ -14,7 +18,7 @@ expect object PlatformComponents {
     fun Button(
         onClick: () -> Unit,
         modifier: Modifier,
-        content: @Composable () -> Unit
+        content: @Composable () -> Unit,
     ): (@Composable () -> Unit)?
 
     @Composable
@@ -35,7 +39,7 @@ object PlatformComponentsEmpty {
     fun Button(
         onClick: () -> Unit,
         modifier: Modifier,
-        content: @Composable () -> Unit
+        content: @Composable () -> Unit,
     ): (@Composable () -> Unit)? = null
 
     @Composable

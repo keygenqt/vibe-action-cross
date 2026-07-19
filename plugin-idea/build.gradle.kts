@@ -4,9 +4,13 @@ import java.io.PipedInputStream
 import kotlin.concurrent.thread
 
 plugins {
+    // Resolved without version — comes from root classpath
     id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.changelog")
     id("org.jetbrains.intellij.platform")
+    // buildSrc precompiled script plugin, not a Plugin Portal id
+    id("spotless")
+    // Version from libs.versions.toml
     alias(libs.plugins.composeCompiler)
 }
 
@@ -50,7 +54,7 @@ tasks.withType<RunIdeTask>().configureEach {
     doFirst {
         val pos = PipedOutputStream()
         errorOutput = pos
-        thread {
+        thread(isDaemon = true) {
             PipedInputStream(pos).bufferedReader().forEachLine { line ->
                 if (filterTag in line) {
                     System.err.println(line)

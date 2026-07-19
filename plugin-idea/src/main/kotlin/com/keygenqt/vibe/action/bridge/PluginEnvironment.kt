@@ -1,12 +1,15 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.bridge
 
 import com.intellij.openapi.project.Project
+import com.keygenqt.vibe.action.bridge.view.PluginAboutViewBridge
+import com.keygenqt.vibe.action.bridge.view.PluginHistoryDetailViewBridge
+import com.keygenqt.vibe.action.bridge.view.PluginHistoryViewBridge
 import com.keygenqt.vibe.action.bridge.view.PluginMainViewBridge
 import com.keygenqt.vibe.action.bridge.view.PluginSettingsViewBridge
-import com.keygenqt.vibe.action.bridge.Bridge
-import com.keygenqt.vibe.action.bridge.Environment
-import com.keygenqt.vibe.action.bridge.Platform
-import com.keygenqt.vibe.action.bridge.PlatformView
 
 /**
  * IntelliJ plugin implementation of the runtime environment.
@@ -32,6 +35,9 @@ data class PluginEnvironment(
         vws = hashMapOf(
             PlatformView.Main to PluginMainViewBridge(),
             PlatformView.Settings to PluginSettingsViewBridge(),
-        )
-    )
+            PlatformView.History to PluginHistoryViewBridge(),
+            PlatformView.HistoryDetail to PluginHistoryDetailViewBridge(),
+            PlatformView.About to PluginAboutViewBridge(),
+        ),
+    ),
 ) : Environment

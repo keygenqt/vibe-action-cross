@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.components
 
 import androidx.compose.runtime.Composable
@@ -16,7 +20,7 @@ object Components {
     fun Button(
         onClick: () -> Unit,
         modifier: Modifier = Modifier,
-        content: @Composable () -> Unit
+        content: @Composable () -> Unit,
     ) {
         PlatformComponents.Button(onClick, modifier, content)?.invoke() ?: run {
             MButton(onClick = onClick, modifier = modifier) {

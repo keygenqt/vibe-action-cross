@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.bridge
 
 import androidx.compose.runtime.Composable
@@ -11,7 +15,6 @@ import com.intellij.util.ui.ImageUtil
 import com.keygenqt.vibe.action.resources.IconBundle
 import com.keygenqt.vibe.action.resources.ImageBundle
 import com.keygenqt.vibe.action.resources.MessageBundle
-import com.keygenqt.vibe.action.bridge.ResBridge
 import com.keygenqt.vibe.action.resources.PlatformIcon
 import com.keygenqt.vibe.action.resources.PlatformImage
 import com.keygenqt.vibe.action.resources.PlatformString
@@ -26,20 +29,16 @@ class PluginResBridge : ResBridge {
      * Converts a PlatformIcon to a Compose Painter at the given size.
      */
     @Composable
-    override fun icon(icon: PlatformIcon, size: Int): Painter {
-        return when (icon) {
-            PlatformIcon.Sidebar -> IconBundle.Sidebar.toPainter(size, size)
-        }
+    override fun icon(icon: PlatformIcon, size: Int): Painter = when (icon) {
+        PlatformIcon.Sidebar -> IconBundle.Sidebar.toPainter(size, size)
     }
 
     /**
      * Converts a PlatformImage to a Compose Painter at the given dimensions.
      */
     @Composable
-    override fun image(image: PlatformImage, width: Int, height: Int): Painter {
-        return when (image) {
-            PlatformImage.Preview -> ImageBundle.Preview.toPainter(width, height)
-        }
+    override fun image(image: PlatformImage, width: Int, height: Int): Painter = when (image) {
+        PlatformImage.Preview -> ImageBundle.Preview.toPainter(width, height)
     }
 
     /**
@@ -52,7 +51,6 @@ class PluginResBridge : ResBridge {
         }
         return MessageBundle.message(key, *params)
     }
-
 }
 
 /**
@@ -82,13 +80,13 @@ fun Icon.toPainter(width: Int, height: Int): Painter {
         val image: BufferedImage = ImageUtil.createImage(
             targetWidth,
             targetHeight,
-            BufferedImage.TYPE_INT_ARGB
+            BufferedImage.TYPE_INT_ARGB,
         )
         val graphics = image.createGraphics()
         try {
             graphics.scale(
                 targetWidth.toDouble() / iconWidth,
-                targetHeight.toDouble() / iconHeight
+                targetHeight.toDouble() / iconHeight,
             )
             paintIcon(JBLabel(), graphics, 0, 0)
         } finally {

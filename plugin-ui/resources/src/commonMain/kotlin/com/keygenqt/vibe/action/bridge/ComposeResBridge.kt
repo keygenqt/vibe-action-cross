@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.bridge
 
 import androidx.compose.runtime.Composable
@@ -20,29 +24,23 @@ class ComposeResBridge : ResBridge {
      * Returns a platform icon from compose resources.
      */
     @Composable
-    override fun icon(icon: PlatformIcon, size: Int): Painter {
-        return when (icon) {
-            PlatformIcon.Sidebar -> painterResource(Res.drawable.sidebar)
-        }
+    override fun icon(icon: PlatformIcon, size: Int): Painter = when (icon) {
+        PlatformIcon.Sidebar -> painterResource(Res.drawable.sidebar)
     }
 
     /**
      * Returns a platform image from compose resources.
      */
     @Composable
-    override fun image(image: PlatformImage, width: Int, height: Int): Painter {
-        return when (image) {
-            PlatformImage.Preview -> painterResource(Res.drawable.preview)
-        }
+    override fun image(image: PlatformImage, width: Int, height: Int): Painter = when (image) {
+        PlatformImage.Preview -> painterResource(Res.drawable.preview)
     }
 
     /**
      * Returns a localized string from compose resources.
      */
     @Composable
-    override fun string(key: PlatformString, vararg params: Any?): String {
-        return when (key) {
-            PlatformString.SidebarTitle -> stringResource(Res.string.sidebar_title)
-        }
+    override fun string(key: PlatformString, vararg params: Any?): String = when (key) {
+        PlatformString.SidebarTitle -> stringResource(Res.string.sidebar_title)
     }
 }

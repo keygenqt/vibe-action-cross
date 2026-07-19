@@ -1,4 +1,7 @@
 plugins {
+    // buildSrc precompiled script plugin, not a Plugin Portal id
+    id("spotless")
+    // Version from libs.versions.toml
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)

@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action
 
 import androidx.compose.runtime.Composable
@@ -17,6 +21,9 @@ import com.keygenqt.vibe.action.bridge.Environment
 import com.keygenqt.vibe.action.bridge.ViewEnvironment
 import com.keygenqt.vibe.action.bridge.ViewScope
 import com.keygenqt.vibe.action.di.appModule
+import com.keygenqt.vibe.action.view.about.AboutView
+import com.keygenqt.vibe.action.view.history.HistoryView
+import com.keygenqt.vibe.action.view.historyDetail.HistoryDetailView
 import com.keygenqt.vibe.action.view.main.MainView
 import com.keygenqt.vibe.action.view.settings.SettingsView
 import kotlinx.serialization.Serializable
@@ -34,6 +41,15 @@ sealed interface AppRoute : NavKey {
 
     @Serializable
     data object Settings : AppRoute
+
+    @Serializable
+    data object History : AppRoute
+
+    @Serializable
+    data class HistoryDetail(val runId: String) : AppRoute
+
+    @Serializable
+    data object About : AppRoute
 }
 
 /**
@@ -42,7 +58,7 @@ sealed interface AppRoute : NavKey {
 @Composable
 fun InitApp(
     environment: Environment,
-    composable: @Composable ViewScope.() -> Unit
+    composable: @Composable ViewScope.() -> Unit,
 ) {
     val lifecycleOwner = remember {
         object : LifecycleOwner {
@@ -53,14 +69,19 @@ fun InitApp(
     }
     CompositionLocalProvider(
         LocalLifecycleOwner provides lifecycleOwner,
-        ViewEnvironment provides environment
+        ViewEnvironment provides environment,
     ) {
-        KoinApplication(KoinConfiguration {
-            logger(KermitKoinLogger(Logger.withTag("Koin")))
-            modules(appModule, module {
-                single { environment }
-            })
-        }) {
+        KoinApplication(
+            KoinConfiguration {
+                logger(KermitKoinLogger(Logger.withTag("Koin")))
+                modules(
+                    appModule,
+                    module {
+                        single { environment }
+                    },
+                )
+            },
+        ) {
             ViewScope().composable()
         }
     }
@@ -83,10 +104,23 @@ fun ViewScope.RootAppDispatcher() {
         NavEntry(route) {
             when (route) {
                 AppRoute.Main -> MainView(
-                    onNavigateToSettings = { backStack.add(AppRoute.Settings) }
+                    onNavigateToSettings = { backStack.add(AppRoute.Settings) },
+                    onNavigateToHistory = { backStack.add(AppRoute.History) },
+                    onNavigateToAbout = { backStack.add(AppRoute.About) },
                 )
                 AppRoute.Settings -> SettingsView(
-                    onBack = { backStack.removeLastOrNull() }
+                    onBack = { backStack.removeLastOrNull() },
+                )
+                AppRoute.History -> HistoryView(
+                    onBack = { backStack.removeLastOrNull() },
+                    onOpenDetail = { runId -> backStack.add(AppRoute.HistoryDetail(runId)) },
+                )
+                is AppRoute.HistoryDetail -> HistoryDetailView(
+                    runId = route.runId,
+                    onBack = { backStack.removeLastOrNull() },
+                )
+                AppRoute.About -> AboutView(
+                    onBack = { backStack.removeLastOrNull() },
                 )
             }
         }

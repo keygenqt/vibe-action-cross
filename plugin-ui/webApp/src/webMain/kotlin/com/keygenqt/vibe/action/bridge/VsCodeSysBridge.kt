@@ -1,6 +1,8 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.bridge
-
-import com.keygenqt.vibe.action.bridge.SysBridge
 
 /**
  * VS Code implementation of the system bridge, delegating notifications and dialogs
@@ -26,8 +28,8 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
                     "$title\n\n$message",
                     kotlin.js.json(Pair("modal", true)),
                     "Yes",
-                    "No"
-                )
+                    "No",
+                ),
             ) { result -> onResult(result == "Yes") }
         }
 }

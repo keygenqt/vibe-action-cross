@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.view.main
 
 import co.touchlab.kermit.Logger
@@ -11,7 +15,7 @@ import com.keygenqt.vibe.action.bridge.PlatformView
 class MainViewModel(
     env: Environment,
     view: PlatformView,
-    logger: Logger
+    logger: Logger,
 ) : BaseViewModel(env, view) {
     init {
         logger.d { "platform: ${env.platform.name}" }
