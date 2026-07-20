@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="launchVscode" />
+          <option value="launchVscodeDev" />
         </list>
       </option>
       <option name="vmOptions" value="" />

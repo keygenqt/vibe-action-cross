@@ -61,3 +61,35 @@ tasks.register<Exec>("launchVscode") {
         "--new-window"
     )
 }
+
+/**
+ * Copies the webApp JS dev bundle into plugin-vscode for fast iteration —
+ * unminified, no tree-shaking, but builds noticeably faster than production.
+ */
+tasks.register<Copy>("copyWebAppBundleDev") {
+    group = "vscode"
+    description = "Copy webApp JS development bundle into plugin-vscode"
+    val dir = rootProject.projectDir
+
+    dependsOn(":plugin-ui:webApp:jsBrowserDevelopmentExecutableDistribution")
+
+    from(dir.resolve("plugin-ui/webApp/build/dist/js/developmentExecutable"))
+    into(dir.resolve("plugin-vscode/productionExecutable"))
+}
+
+/**
+ * Builds the webApp bundle in development mode (fast, unminified) and launches VS Code.
+ */
+tasks.register<Exec>("launchVscodeDev") {
+    group = "vscode"
+    description = "Build webApp JS bundle (dev mode) and launch VS Code extension"
+    val dir = rootProject.projectDir
+
+    dependsOn("copyWebAppBundleDev")
+
+    commandLine(
+        "code",
+        "--extensionDevelopmentPath=${dir.resolve("plugin-vscode")}",
+        "--new-window"
+    )
+}

@@ -4,6 +4,9 @@
  */
 package com.keygenqt.vibe.action.bridge
 
+import kotlinx.browser.window
+import org.w3c.dom.events.Event
+
 /**
  * VS Code implementation of the system bridge, delegating notifications and dialogs
  * to the extension host through VsCodeApi.
@@ -32,4 +35,20 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
                 ),
             ) { result -> onResult(result == "Yes") }
         }
+
+    /**
+     * Listens for a "themeChanged" broadcast pushed from the extension host
+     * (subscribed to vscode.window.onDidChangeActiveColorTheme on that side).
+     */
+    override val onThemeChanged: ((onChanged: () -> Unit) -> (() -> Unit)) = { onChanged ->
+        val listener: (Event) -> Unit = { event ->
+            val data = event.asDynamic().data
+            if (data?.target == "themeChanged") {
+                onChanged()
+            }
+        }
+        window.addEventListener("message", listener)
+        val unsubscribe: () -> Unit = { window.removeEventListener("message", listener) }
+        unsubscribe
+    }
 }

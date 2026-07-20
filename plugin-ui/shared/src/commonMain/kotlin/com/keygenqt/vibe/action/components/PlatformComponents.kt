@@ -7,6 +7,7 @@ package com.keygenqt.vibe.action.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 
@@ -26,6 +27,7 @@ expect object PlatformComponents {
         text: String,
         modifier: Modifier,
         fontSize: TextUnit,
+        fontWeight: FontWeight?,
         color: Color,
         textAlign: TextAlign,
     ): (@Composable () -> Unit)?
@@ -47,6 +49,7 @@ object PlatformComponentsEmpty {
         text: String,
         modifier: Modifier,
         fontSize: TextUnit,
+        fontWeight: FontWeight?,
         color: Color,
         textAlign: TextAlign,
     ): (@Composable () -> Unit)? = null

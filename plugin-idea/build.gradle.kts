@@ -21,6 +21,8 @@ dependencies {
     implementation(libs.koin.compose) { excludePlatformProvided() }
     implementation(libs.navigation3.ui) { excludePlatformProvided() }
     implementation(libs.navigationevent.compose) { excludePlatformProvided() }
+    implementation(libs.compose.material.icons.core) { excludePlatformProvided() }
+    implementation(libs.compose.material.icons.extended) { excludePlatformProvided() }
 
     intellijPlatform {
         intellijIdea("2026.1.4")

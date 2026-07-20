@@ -37,4 +37,11 @@ class PluginSysBridge(val project: Project) : SysBridge {
                     .ask(project),
             )
         }
+
+    /**
+     * IDEA doesn't need an explicit theme-change hook — Jewel already
+     * recomposes JewelTheme.isDark/globalColors live via SwingBridgeTheme
+     * when the IDE theme changes, so platformColorScheme() picks it up on its own.
+     */
+    override val onThemeChanged: ((onChanged: () -> Unit) -> (() -> Unit))? = null
 }

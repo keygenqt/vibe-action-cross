@@ -18,9 +18,11 @@ import com.keygenqt.vibe.action.bridge.PluginEnvironment
 import com.keygenqt.vibe.action.resources.IconBundle
 import org.jetbrains.jewel.bridge.theme.SwingBridgeTheme
 import org.jetbrains.jewel.foundation.ExperimentalJewelApi
+import org.jetbrains.jewel.ui.util.toArgbHexString
 import java.awt.BorderLayout
 import javax.swing.Icon
 import javax.swing.JComponent
+import javax.swing.UIManager
 
 /**
  * IntelliJ tool window factory for the plugin sidebar.
@@ -42,6 +44,10 @@ class PluginSidebar : ToolWindowFactory {
      * Creates the Compose-based sidebar content within the tool window.
      */
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        UIManager.getDefaults().entries
+            .filter { it.value is java.awt.Color }
+            .forEach { (key, value) -> println("$key = ${(value as java.awt.Color).toArgbHexString()}") }
+
         val page = SidebarScreen(project)
         val content = ContentFactory.getInstance().createContent(page.getContent(), null, false)
         Disposer.register(content) { page.dispose() }

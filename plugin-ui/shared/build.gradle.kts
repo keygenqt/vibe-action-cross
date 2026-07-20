@@ -29,6 +29,10 @@ kotlin {
             compileOnly(libs.navigation3.ui)
             compileOnly(libs.navigationevent.compose)
 
+            // Compose Icons
+            compileOnly(libs.compose.material.icons.core)
+            compileOnly(libs.compose.material.icons.extended)
+
             // androidx.lifecycle.*Compose is NOT provided by the IDE (unlike the above),
             // so it must be bundled. Declared in the dependencies{} block at the bottom
             // of this file instead of here: KotlinDependencyHandler (this DSL) has no
@@ -69,6 +73,10 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
+
+            // Compose Icons
+            implementation(libs.compose.material.icons.core)
+            implementation(libs.compose.material.icons.extended)
 
             // Browser API wrappers
             implementation(libs.wrappers.browser)

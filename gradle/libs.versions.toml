@@ -5,6 +5,7 @@ kotlinx-coroutines = "1.11.0"
 kotlinx-datetime = "0.8.0"
 kotlin-wrappers = "2026.6.1"
 spotless = "8.1.0"
+material-icons = "1.7.3"
 
 # Compose Multiplatform / IntelliJ Platform
 compose-multiplatform = "1.10.0" # Must match jewel's compose runtime version
@@ -68,6 +69,10 @@ kermit-koin = { module = "co.touchlab:kermit-koin", version.ref = "kermit" }
 # Testing
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
+
+# Compose Icons
+compose-material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "material-icons" }
+compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "material-icons" }
 
 [plugins]
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

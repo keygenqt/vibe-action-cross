@@ -18,6 +18,13 @@ interface SysBridge {
      * Invokes a modal confirmation dialog on the target platform.
      */
     val showConfirmDialog: ((title: String, message: String, onResult: (Boolean) -> Unit) -> Unit)?
+
+    /**
+     * Subscribes to host theme changes. Returns an unsubscribe function.
+     * Platforms where recomposition already reacts to theme changes on its
+     * own (e.g. IDEA via Jewel) can leave this null.
+     */
+    val onThemeChanged: ((onChanged: () -> Unit) -> (() -> Unit))?
 }
 
 /**
@@ -26,4 +33,5 @@ interface SysBridge {
 open class SysBridgeEmpty : SysBridge {
     override val showNotification: ((title: String, message: String) -> Unit)? = null
     override val showConfirmDialog: ((title: String, message: String, onResult: (Boolean) -> Unit) -> Unit)? = null
+    override val onThemeChanged: ((onChanged: () -> Unit) -> (() -> Unit))? = null
 }

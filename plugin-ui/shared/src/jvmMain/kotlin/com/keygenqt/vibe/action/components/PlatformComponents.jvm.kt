@@ -7,10 +7,9 @@ package com.keygenqt.vibe.action.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
-import com.keygenqt.vibe.action.bridge.Platform
-import com.keygenqt.vibe.action.bridge.ViewEnvironment
 import org.jetbrains.jewel.ui.component.DefaultButton as JButton
 import org.jetbrains.jewel.ui.component.Text as JText
 
@@ -23,12 +22,9 @@ actual object PlatformComponents {
         onClick: () -> Unit,
         modifier: Modifier,
         content: @Composable () -> Unit,
-    ): (@Composable () -> Unit)? {
-        if (ViewEnvironment.current.platform != Platform.IntellJPlugin) return null
-        return {
-            JButton(onClick = onClick, modifier = modifier) {
-                content()
-            }
+    ): (@Composable () -> Unit)? = {
+        JButton(onClick = onClick, modifier = modifier) {
+            content()
         }
     }
 
@@ -37,10 +33,17 @@ actual object PlatformComponents {
         text: String,
         modifier: Modifier,
         fontSize: TextUnit,
+        fontWeight: FontWeight?,
         color: Color,
         textAlign: TextAlign,
-    ): (@Composable () -> Unit)? {
-        if (ViewEnvironment.current.platform != Platform.IntellJPlugin) return null
-        return { JText(text = text, modifier = modifier, fontSize = fontSize, color = color, textAlign = textAlign) }
+    ): (@Composable () -> Unit)? = {
+        JText(
+            text = text,
+            modifier = modifier,
+            fontSize = fontSize,
+            fontWeight = fontWeight,
+            color = color,
+            textAlign = textAlign,
+        )
     }
 }

@@ -12,12 +12,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.ImageUtil
-import com.keygenqt.vibe.action.resources.IconBundle
-import com.keygenqt.vibe.action.resources.ImageBundle
-import com.keygenqt.vibe.action.resources.MessageBundle
-import com.keygenqt.vibe.action.resources.PlatformIcon
-import com.keygenqt.vibe.action.resources.PlatformImage
-import com.keygenqt.vibe.action.resources.PlatformString
+import com.keygenqt.vibe.action.resources.*
 import java.awt.image.BufferedImage
 import javax.swing.Icon
 

@@ -21,6 +21,7 @@ import com.keygenqt.vibe.action.bridge.Environment
 import com.keygenqt.vibe.action.bridge.ViewEnvironment
 import com.keygenqt.vibe.action.bridge.ViewScope
 import com.keygenqt.vibe.action.di.appModule
+import com.keygenqt.vibe.action.theme.AppTheme
 import com.keygenqt.vibe.action.view.about.AboutView
 import com.keygenqt.vibe.action.view.history.HistoryView
 import com.keygenqt.vibe.action.view.historyDetail.HistoryDetailView
@@ -100,28 +101,30 @@ fun InitApp(
 fun ViewScope.RootAppDispatcher() {
     val backStack = remember { NavBackStack<AppRoute>(AppRoute.Main) }
 
-    NavDisplay(backStack = backStack) { route ->
-        NavEntry(route) {
-            when (route) {
-                AppRoute.Main -> MainView(
-                    onNavigateToSettings = { backStack.add(AppRoute.Settings) },
-                    onNavigateToHistory = { backStack.add(AppRoute.History) },
-                    onNavigateToAbout = { backStack.add(AppRoute.About) },
-                )
-                AppRoute.Settings -> SettingsView(
-                    onBack = { backStack.removeLastOrNull() },
-                )
-                AppRoute.History -> HistoryView(
-                    onBack = { backStack.removeLastOrNull() },
-                    onOpenDetail = { runId -> backStack.add(AppRoute.HistoryDetail(runId)) },
-                )
-                is AppRoute.HistoryDetail -> HistoryDetailView(
-                    runId = route.runId,
-                    onBack = { backStack.removeLastOrNull() },
-                )
-                AppRoute.About -> AboutView(
-                    onBack = { backStack.removeLastOrNull() },
-                )
+    AppTheme {
+        NavDisplay(backStack = backStack) { route ->
+            NavEntry(route) {
+                when (route) {
+                    AppRoute.Main -> MainView(
+                        onNavigateToSettings = { backStack.add(AppRoute.Settings) },
+                        onNavigateToHistory = { backStack.add(AppRoute.History) },
+                        onNavigateToAbout = { backStack.add(AppRoute.About) },
+                    )
+                    AppRoute.Settings -> SettingsView(
+                        onBack = { backStack.removeLastOrNull() },
+                    )
+                    AppRoute.History -> HistoryView(
+                        onBack = { backStack.removeLastOrNull() },
+                        onOpenDetail = { runId -> backStack.add(AppRoute.HistoryDetail(runId)) },
+                    )
+                    is AppRoute.HistoryDetail -> HistoryDetailView(
+                        runId = route.runId,
+                        onBack = { backStack.removeLastOrNull() },
+                    )
+                    AppRoute.About -> AboutView(
+                        onBack = { backStack.removeLastOrNull() },
+                    )
+                }
             }
         }
     }

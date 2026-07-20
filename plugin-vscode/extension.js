@@ -28,6 +28,13 @@ function activate(context) {
             return `${attr}="${uri}"`
           })
 
+      // Push a themeChanged broadcast to the webview whenever the user switches VS Code's theme
+      const themeListener = vscode.window.onDidChangeActiveColorTheme(() => {
+        webviewView.webview.postMessage({ target: 'themeChanged' })
+      })
+      context.subscriptions.push(themeListener)
+      webviewView.onDidDispose(() => themeListener.dispose())
+
       // Universal bridge: routes postMessage commands to VS Code API dynamically
       webviewView.webview.onDidReceiveMessage(async message => {
         const { target, args, requestId } = message
@@ -41,9 +48,9 @@ function activate(context) {
   }
 
   context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider('vibe-action.sidebarView', provider, {
-      webviewOptions: { retainContextWhenHidden: true },
-    })
+      vscode.window.registerWebviewViewProvider('vibe-action.sidebarView', provider, {
+        webviewOptions: { retainContextWhenHidden: true },
+      })
   )
 }
 
