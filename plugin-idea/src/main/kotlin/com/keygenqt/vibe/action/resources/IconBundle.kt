@@ -11,5 +11,5 @@ import com.intellij.openapi.util.IconLoader
  */
 object IconBundle {
     @JvmField
-    val Sidebar = IconLoader.getIcon("/drawable/sidebar.svg", IconBundle::class.java)
+    val AppIcon = IconLoader.getIcon("/drawable/app_icon.svg", IconBundle::class.java)
 }

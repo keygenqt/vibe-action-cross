@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="sidebar_title">Vibe Action</string>
+
+    <!-- About screen -->
+    <string name="about_title">About</string>
+    <string name="about_description1">This panel is rendered from a single Kotlin Multiplatform / Compose Multiplatform codebase — one UI, two targets: an IntelliJ Platform plugin and a VS Code extension.</string>
+    <string name="about_description2">Platform differences go through a Bridge, not branching logic — native look and feel comes from Jewel inside IntelliJ, and matches VS Code's own theme in its webview.</string>
+    <string name="about_requirement">Requires the vibe-action CLI, installed and available on PATH.</string>
+
+    <!-- History screen -->
+    <string name="history_title">History</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Settings</string>
 </resources>

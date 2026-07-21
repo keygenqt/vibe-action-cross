@@ -5,20 +5,18 @@
 package com.keygenqt.vibe.action.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.keygenqt.vibe.action.components.Components.Text
 
 /**
  * Shared page layout: back arrow + title on nested screens, plain title
@@ -28,8 +26,10 @@ import com.keygenqt.vibe.action.components.Components.Text
 @Composable
 fun ScreenScaffold(
     title: String,
+    titleIcon: (@Composable () -> Unit)? = null,
     onBack: (() -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit)? = null,
+    scrollable: Boolean = true,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(
@@ -40,7 +40,12 @@ fun ScreenScaffold(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                    .padding(
+                        start = if (onBack != null) 12.dp else 20.dp,
+                        end = 12.dp,
+                        top = 12.dp,
+                        bottom = 12.dp,
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -57,6 +62,8 @@ fun ScreenScaffold(
                     }
                 }
 
+                titleIcon?.invoke()
+
                 Text(
                     text = title,
                     fontSize = 15.sp,
@@ -66,7 +73,7 @@ fun ScreenScaffold(
 
                 actions?.let { row ->
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         content = row,
                     )
@@ -76,7 +83,9 @@ fun ScreenScaffold(
             HorizontalDivider()
 
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .let { if (scrollable) it.verticalScroll(rememberScrollState()) else it },
                 content = content,
             )
         }

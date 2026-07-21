@@ -11,5 +11,5 @@ import com.intellij.openapi.util.IconLoader
  */
 object ImageBundle {
     @JvmField
-    val Preview = IconLoader.getIcon("/drawable/preview.png", ImageBundle::class.java)
+    val Architecture = IconLoader.getIcon("/drawable/architecture_diagram.png", ImageBundle::class.java)
 }

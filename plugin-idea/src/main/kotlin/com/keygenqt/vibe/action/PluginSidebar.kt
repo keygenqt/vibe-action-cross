@@ -33,7 +33,7 @@ class PluginSidebar : ToolWindowFactory {
     /**
      * Sidebar tool window icon.
      */
-    override val icon: Icon = IconBundle.Sidebar
+    override val icon: Icon = IconBundle.AppIcon
 
     /**
      * Tool window is always available.

@@ -21,16 +21,6 @@ expect object PlatformComponents {
         modifier: Modifier,
         content: @Composable () -> Unit,
     ): (@Composable () -> Unit)?
-
-    @Composable
-    fun Text(
-        text: String,
-        modifier: Modifier,
-        fontSize: TextUnit,
-        fontWeight: FontWeight?,
-        color: Color,
-        textAlign: TextAlign,
-    ): (@Composable () -> Unit)?
 }
 
 /**
@@ -42,15 +32,5 @@ object PlatformComponentsEmpty {
         onClick: () -> Unit,
         modifier: Modifier,
         content: @Composable () -> Unit,
-    ): (@Composable () -> Unit)? = null
-
-    @Composable
-    fun Text(
-        text: String,
-        modifier: Modifier,
-        fontSize: TextUnit,
-        fontWeight: FontWeight?,
-        color: Color,
-        textAlign: TextAlign,
     ): (@Composable () -> Unit)? = null
 }

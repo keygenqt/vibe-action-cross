@@ -25,7 +25,7 @@ class PluginResBridge : ResBridge {
      */
     @Composable
     override fun icon(icon: PlatformIcon, size: Int): Painter = when (icon) {
-        PlatformIcon.Sidebar -> IconBundle.Sidebar.toPainter(size, size)
+        PlatformIcon.AppIcon -> IconBundle.AppIcon.toPainter(size, size)
     }
 
     /**
@@ -33,7 +33,7 @@ class PluginResBridge : ResBridge {
      */
     @Composable
     override fun image(image: PlatformImage, width: Int, height: Int): Painter = when (image) {
-        PlatformImage.Preview -> ImageBundle.Preview.toPainter(width, height)
+        PlatformImage.Architecture -> ImageBundle.Architecture.toPainter(width, height)
     }
 
     /**
@@ -43,6 +43,12 @@ class PluginResBridge : ResBridge {
     override fun string(key: PlatformString, vararg params: Any?): String {
         val key = when (key) {
             PlatformString.SidebarTitle -> "toolwindow.stripe.Sidebar"
+            PlatformString.AboutTitle -> "about.title"
+            PlatformString.AboutDescription1 -> "about.description1"
+            PlatformString.AboutDescription2 -> "about.description2"
+            PlatformString.AboutRequirement -> "about.requirement"
+            PlatformString.HistoryTitle -> "history.title"
+            PlatformString.SettingsTitle -> "settings.title"
         }
         return MessageBundle.message(key, *params)
     }

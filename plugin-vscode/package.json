@@ -20,7 +20,7 @@
         {
           "id": "vibe-action-sidebar",
           "title": "Vibe Action",
-          "icon": "media/icon.svg"
+          "icon": "media/app_icon.svg"
         }
       ]
     },
@@ -30,7 +30,7 @@
           "type": "webview",
           "id": "vibe-action.sidebarView",
           "name": "Control Dashboard",
-          "icon": "media/icon.svg"
+          "icon": "media/app_icon.svg"
         }
       ]
     }

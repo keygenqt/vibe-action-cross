@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="sidebar_title">Vibe Action</string>
+
+    <!-- About screen -->
+    <string name="about_title">О плагине</string>
+    <string name="about_description1">Эта панель отрисовывается из единой кодовой базы Kotlin Multiplatform / Compose Multiplatform — один UI, две платформы: плагин для IntelliJ Platform и расширение для VS Code.</string>
+    <string name="about_description2">Платформенные различия проходят через Bridge, а не через ветвление кода — нативный вид обеспечивает Jewel внутри IntelliJ, а в вебвью VS Code используется её собственная тема.</string>
+    <string name="about_requirement">Требуется CLI vibe-action, установленный и доступный через PATH.</string>
+
+    <!-- History screen -->
+    <string name="history_title">История</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Настройки</string>
 </resources>

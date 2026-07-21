@@ -29,25 +29,4 @@ object Components {
             }
         }
     }
-
-    @Composable
-    fun Text(
-        text: String,
-        modifier: Modifier = Modifier,
-        fontSize: TextUnit = TextUnit.Unspecified,
-        fontWeight: FontWeight? = null,
-        color: Color = Color.Unspecified,
-        textAlign: TextAlign = TextAlign.Unspecified,
-    ) {
-        PlatformComponents.Text(text, modifier, fontSize, fontWeight, color, textAlign)?.invoke() ?: run {
-            MText(
-                text = text,
-                modifier = modifier,
-                fontSize = fontSize,
-                fontWeight = fontWeight,
-                color = color,
-                textAlign = textAlign,
-            )
-        }
-    }
 }
