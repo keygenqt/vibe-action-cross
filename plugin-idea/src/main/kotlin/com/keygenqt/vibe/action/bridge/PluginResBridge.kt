@@ -43,6 +43,7 @@ class PluginResBridge : ResBridge {
     override fun string(key: PlatformString, vararg params: Any?): String {
         val key = when (key) {
             PlatformString.SidebarTitle -> "toolwindow.stripe.Sidebar"
+            PlatformString.MainTitle -> "main.title"
             PlatformString.AboutTitle -> "about.title"
             PlatformString.AboutDescription1 -> "about.description1"
             PlatformString.AboutDescription2 -> "about.description2"

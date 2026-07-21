@@ -19,6 +19,7 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.about_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.architecture_diagram
 import vibe_action_cross.plugin_ui.resources.generated.resources.app_icon
 import vibe_action_cross.plugin_ui.resources.generated.resources.history_title
+import vibe_action_cross.plugin_ui.resources.generated.resources.main_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.sidebar_title
 
@@ -50,6 +51,7 @@ class ComposeResBridge : ResBridge {
         val values = params.filterNotNull().toTypedArray()
         return when (key) {
             PlatformString.SidebarTitle -> stringResource(Res.string.sidebar_title, *values)
+            PlatformString.MainTitle -> stringResource(Res.string.main_title, *values)
             PlatformString.AboutTitle -> stringResource(Res.string.about_title, *values)
             PlatformString.AboutDescription1 -> stringResource(Res.string.about_description1, *values)
             PlatformString.AboutDescription2 -> stringResource(Res.string.about_description2, *values)

@@ -4,26 +4,20 @@
  */
 package com.keygenqt.vibe.action.view.main
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.keygenqt.vibe.action.bridge.ViewEnvironment
 import com.keygenqt.vibe.action.components.ScreenScaffold
-import com.keygenqt.vibe.action.resources.PlatformIcon
+import com.keygenqt.vibe.action.view.main.components.ActionsList
+import com.keygenqt.vibe.action.view.main.components.ActionsToolbar
+import com.keygenqt.vibe.action.view.main.components.MainHeaderActions
+import com.keygenqt.vibe.action.view.main.components.MainTitleIcon
 import org.koin.compose.koinInject
 
+/**
+ * Root Actions screen — list of runnable flows, entry point of the plugin.
+ */
 @Composable
 fun MainView(
     viewModel: MainViewModel = koinInject<MainViewModel>(),
@@ -32,56 +26,40 @@ fun MainView(
     onNavigateToAbout: () -> Unit = {},
 ) {
     val env = ViewEnvironment.current
+    val actions by viewModel.actions.collectAsState()
+    val expandedActionId by viewModel.expandedActionId.collectAsState()
 
     ScreenScaffold(
         title = "Actions",
-        titleIcon = {
-            Icon(
-                painter = env.bridge.res.icon(PlatformIcon.AppIcon),
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
+        titleIcon = { MainTitleIcon(env) },
+        actions = {
+            MainHeaderActions(
+                onNavigateToHistory = onNavigateToHistory,
+                onNavigateToAbout = onNavigateToAbout,
+                onNavigateToSettings = onNavigateToSettings,
             )
         },
-        actions = {
-            IconButton(
-                onClick = onNavigateToHistory,
-                modifier = Modifier.size(24.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.History,
-                    contentDescription = "History",
-                    modifier = Modifier.size(16.dp),
-                )
-            }
-            IconButton(
-                onClick = onNavigateToAbout,
-                modifier = Modifier.size(24.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "About",
-                    modifier = Modifier.size(16.dp),
-                )
-            }
-            IconButton(
-                onClick = onNavigateToSettings,
-                modifier = Modifier.size(24.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    modifier = Modifier.size(16.dp),
-                )
-            }
-        },
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(text = "Main View")
-        }
+        ActionsToolbar(count = actions.size)
+        ActionsList(
+            actions = actions,
+            expandedActionId = expandedActionId,
+            onToggleExpanded = viewModel::toggleExpanded,
+            onRun = viewModel::runAction,
+            onDelete = viewModel::deleteAction,
+        )
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

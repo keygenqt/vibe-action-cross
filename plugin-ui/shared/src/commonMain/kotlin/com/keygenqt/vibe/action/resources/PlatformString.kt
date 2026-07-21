@@ -10,6 +10,8 @@ package com.keygenqt.vibe.action.resources
 enum class PlatformString {
     // Root Actions screen — tool window stripe label
     SidebarTitle,
+    // Actions screen
+    MainTitle,
     // About screen
     AboutTitle,
     AboutDescription1,

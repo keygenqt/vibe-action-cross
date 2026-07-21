@@ -2,6 +2,9 @@
 <resources>
     <string name="sidebar_title">Vibe Action</string>
 
+    <!-- Main screen -->
+    <string name="main_title">Actions</string>
+
     <!-- About screen -->
     <string name="about_title">About</string>
     <string name="about_description1">This panel is rendered from a single Kotlin Multiplatform / Compose Multiplatform codebase — one UI, two targets: an IntelliJ Platform plugin and a VS Code extension.</string>

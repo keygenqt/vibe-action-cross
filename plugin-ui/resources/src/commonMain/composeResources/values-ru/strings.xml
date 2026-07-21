@@ -2,6 +2,9 @@
 <resources>
     <string name="sidebar_title">Vibe Action</string>
 
+    <!-- Main screen -->
+    <string name="main_title">Действия</string>
+
     <!-- About screen -->
     <string name="about_title">О плагине</string>
     <string name="about_description1">Эта панель отрисовывается из единой кодовой базы Kotlin Multiplatform / Compose Multiplatform — один UI, две платформы: плагин для IntelliJ Platform и расширение для VS Code.</string>

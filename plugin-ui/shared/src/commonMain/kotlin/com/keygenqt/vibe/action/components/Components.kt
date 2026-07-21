@@ -4,12 +4,16 @@
  */
 package com.keygenqt.vibe.action.components
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Button as MButton
 import androidx.compose.material3.Text as MText
 
@@ -24,7 +28,12 @@ object Components {
         content: @Composable () -> Unit,
     ) {
         PlatformComponents.Button(onClick, modifier, content)?.invoke() ?: run {
-            MButton(onClick = onClick, modifier = modifier) {
+            MButton(
+                onClick = onClick,
+                modifier = modifier.height(28.dp),
+                shape = MaterialTheme.shapes.small,
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+            ) {
                 content()
             }
         }
