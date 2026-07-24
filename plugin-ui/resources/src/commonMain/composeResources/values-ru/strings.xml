@@ -16,4 +16,12 @@
 
     <!-- Settings screen -->
     <string name="settings_title">Настройки</string>
+    <string name="settings_open_config_button">Открыть файл конфигурации</string>
+    <string name="settings_clean_cache_button">Очистить кеш</string>
+    <string name="settings_status_actions_label">Экшены</string>
+    <string name="settings_status_version_label">Версия</string>
+    <string name="settings_status_config_label">Конфиг</string>
+    <string name="settings_config_description">Конфигурация Vibe Action — один YAML-файл, редактируется напрямую.</string>
+    <string name="settings_cache_description">Очищает весь кеш vibe-action. Безопасно запускать в любой момент.</string>
+    <string name="settings_status_description">Подробная информация о CLI-приложении vibe-action.</string>
 </resources>

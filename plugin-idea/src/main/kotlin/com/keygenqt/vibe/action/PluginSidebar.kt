@@ -44,10 +44,6 @@ class PluginSidebar : ToolWindowFactory {
      * Creates the Compose-based sidebar content within the tool window.
      */
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        UIManager.getDefaults().entries
-            .filter { it.value is java.awt.Color }
-            .forEach { (key, value) -> println("$key = ${(value as java.awt.Color).toArgbHexString()}") }
-
         val page = SidebarScreen(project)
         val content = ContentFactory.getInstance().createContent(page.getContent(), null, false)
         Disposer.register(content) { page.dispose() }

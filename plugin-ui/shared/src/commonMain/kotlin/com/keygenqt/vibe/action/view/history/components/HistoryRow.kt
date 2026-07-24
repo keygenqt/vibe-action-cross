@@ -1,15 +1,18 @@
-package com.keygenqt.vibe.action.view.main.components
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package com.keygenqt.vibe.action.view.history.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -19,22 +22,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.keygenqt.vibe.action.models.ActionModel
-import com.keygenqt.vibe.action.models.icon
+import com.keygenqt.vibe.action.models.HistoryItemModel
 
 /**
- * A single action row: icon, name/description, circular play button.
- * Clicking the row body (not the play button) toggles the inline Edit/Delete menu.
+ * A single row: status icon, name/timestamp, circular button that navigates
+ * to detail. Clicking the row body (not the button) toggles an inline Delete option.
  */
 @Composable
-fun ActionRow(
-    action: ActionModel,
+fun HistoryRow(
+    item: HistoryItemModel,
     expanded: Boolean,
     onToggleExpanded: () -> Unit,
-    onRun: () -> Unit,
+    onOpenDetail: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -43,7 +44,7 @@ fun ActionRow(
                 .fillMaxWidth()
                 .clickable(onClick = onToggleExpanded)
                 .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.Top,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -53,30 +54,28 @@ fun ActionRow(
                 ) {
                     Box(modifier = Modifier.width(34.dp)) {
                         Icon(
-                            imageVector = action.icon,
+                            imageVector = if (item.isSuccess) Icons.Default.Check else Icons.Default.Close,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = if (item.isSuccess) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(18.dp),
                         )
                     }
-                    Text(text = action.name, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                    Text(text = item.actionName, fontSize = 14.sp)
                 }
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 34.dp),
-                    text = action.description,
+                    text = item.timestamp,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Box(modifier = Modifier.padding(top = 10.dp)) {
-                ActionPlayButton(onClick = onRun)
-            }
+            HistoryDetailButton(onClick = onOpenDetail)
         }
 
         if (expanded) {
-            ActionRowExpandedMenu(onEdit = { /* @todo: open YAML in editor */ }, onDelete = onDelete)
+            HistoryRowExpandedMenu(onDelete = onDelete)
         }
 
         HorizontalDivider()
@@ -84,11 +83,11 @@ fun ActionRow(
 }
 
 /**
- * Circular play button — runs this action immediately. Its own clickable
- * consumes the tap, so it doesn't also trigger the row's expand/collapse.
+ * Circular button that opens the run's detail screen. Its own clickable
+ * consumes the tap, so it doesn't also toggle the row's expand/collapse.
  */
 @Composable
-fun ActionPlayButton(onClick: () -> Unit) {
+private fun HistoryDetailButton(onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .size(28.dp)
@@ -98,33 +97,22 @@ fun ActionPlayButton(onClick: () -> Unit) {
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            imageVector = Icons.Default.PlayArrow,
-            contentDescription = "Run",
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = "Open detail",
             tint = Color.White,
-            modifier = Modifier.size(14.dp),
+            modifier = Modifier.size(16.dp),
         )
     }
 }
 
 /**
- * Edit / Delete options revealed when a row is expanded, indented to align
- * under the row's name/description text.
+ * Delete option revealed when a row is expanded, indented to align
+ * under the row's name/timestamp text.
  */
 @Composable
-fun ActionRowExpandedMenu(onEdit: () -> Unit, onDelete: () -> Unit) {
+private fun HistoryRowExpandedMenu(onDelete: () -> Unit) {
     Column {
         HorizontalDivider()
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onEdit)
-                .padding(start = 50.dp, end = 20.dp, top = 8.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Icon(imageVector = Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
-            Text(text = "Edit", fontSize = 13.sp)
-        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -143,4 +131,3 @@ fun ActionRowExpandedMenu(onEdit: () -> Unit, onDelete: () -> Unit) {
         }
     }
 }
-

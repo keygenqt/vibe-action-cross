@@ -50,6 +50,14 @@ class PluginResBridge : ResBridge {
             PlatformString.AboutRequirement -> "about.requirement"
             PlatformString.HistoryTitle -> "history.title"
             PlatformString.SettingsTitle -> "settings.title"
+            PlatformString.SettingsOpenConfigButton -> "settings.open_config_button"
+            PlatformString.SettingsCleanCacheButton -> "settings.clean_cache_button"
+            PlatformString.SettingsStatusActionsLabel -> "settings.status.actions_label"
+            PlatformString.SettingsStatusVersionLabel -> "settings.status.version_label"
+            PlatformString.SettingsStatusConfigLabel -> "settings.status.config_label"
+            PlatformString.SettingsConfigDescription -> "settings.config.description"
+            PlatformString.SettingsCacheDescription -> "settings.cache.description"
+            PlatformString.SettingsStatusDescription -> "settings.status.description"
         }
         return MessageBundle.message(key, *params)
     }

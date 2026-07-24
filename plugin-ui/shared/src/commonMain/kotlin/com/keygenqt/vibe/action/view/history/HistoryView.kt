@@ -4,20 +4,23 @@
  */
 package com.keygenqt.vibe.action.view.history
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.keygenqt.vibe.action.bridge.ViewEnvironment
 import com.keygenqt.vibe.action.components.ScreenScaffold
 import com.keygenqt.vibe.action.resources.PlatformString
+import com.keygenqt.vibe.action.view.history.components.HistoryList
 import org.koin.compose.koinInject
 
+/**
+ * History screen — flat, read-only list of past flow runs.
+ * Detail view is deferred until real run data/log parsing exists.
+ */
 @Composable
 fun HistoryView(
     viewModel: HistoryViewModel = koinInject<HistoryViewModel>(),
@@ -25,18 +28,21 @@ fun HistoryView(
     onOpenDetail: (runId: String) -> Unit = {},
 ) {
     val env = ViewEnvironment.current
+    val items by viewModel.items.collectAsState()
+    val expandedItemId by viewModel.expandedItemId.collectAsState()
 
     ScreenScaffold(
         title = env.bridge.res.string(PlatformString.HistoryTitle),
         onBack = onBack,
+        scrollable = false,
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(text = "History list — @todo")
-        }
+        HistoryList(
+            items = items,
+            expandedItemId = expandedItemId,
+            onToggleExpanded = viewModel::toggleExpanded,
+            onOpenDetail = onOpenDetail,
+            onDelete = viewModel::deleteItem,
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }

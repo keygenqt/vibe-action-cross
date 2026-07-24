@@ -13,6 +13,20 @@ import org.w3c.dom.events.Event
  */
 class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
 
+    private var cliEventCallback: ((String) -> Unit)? = null
+    private var cliDoneCallback: ((Int) -> Unit)? = null
+
+    init {
+        // Listen for CLI events from extension host
+        window.addEventListener("message", { event ->
+            val data = event.asDynamic().data
+            when (data?.target) {
+                "cliEvent" -> cliEventCallback?.invoke(data.args[0] as String)
+                "cliDone" -> cliDoneCallback?.invoke(data.args[0] as Int)
+            }
+        })
+    }
+
     /**
      * Shows a native VS Code toast via vscode.window.showInformationMessage.
      */
@@ -50,5 +64,24 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
         window.addEventListener("message", listener)
         val unsubscribe: () -> Unit = { window.removeEventListener("message", listener) }
         unsubscribe
+    }
+
+    /**
+     * Runs vibe-action CLI via extension host child_process.spawn.
+     * Events stream back through postMessage with targets "cliEvent"/"cliDone".
+     */
+    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> Unit) =
+        { args, onEvent, onDone ->
+            cliEventCallback = onEvent
+            cliDoneCallback = onDone
+            api.send("runCli", arrayOf(args.toTypedArray(), "cliEvent", "cliDone"))
+        }
+
+    /**
+     * Opens a file in VS Code editor via vscode.window.showTextDocument.
+     * Extension host converts path to vscode.Uri and opens it.
+     */
+    override val openFile: ((path: String) -> Unit) = { path ->
+        api.send("openFile", arrayOf(path))
     }
 }

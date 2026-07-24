@@ -20,6 +20,14 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.architecture_di
 import vibe_action_cross.plugin_ui.resources.generated.resources.app_icon
 import vibe_action_cross.plugin_ui.resources.generated.resources.history_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.main_title
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_cache_description
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_clean_cache_button
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_config_description
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_open_config_button
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_status_actions_label
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_status_config_label
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_status_description
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_status_version_label
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.sidebar_title
 
@@ -58,6 +66,14 @@ class ComposeResBridge : ResBridge {
             PlatformString.AboutRequirement -> stringResource(Res.string.about_requirement, *values)
             PlatformString.HistoryTitle -> stringResource(Res.string.history_title, *values)
             PlatformString.SettingsTitle -> stringResource(Res.string.settings_title, *values)
+            PlatformString.SettingsOpenConfigButton -> stringResource(Res.string.settings_open_config_button, *values)
+            PlatformString.SettingsCleanCacheButton -> stringResource(Res.string.settings_clean_cache_button, *values)
+            PlatformString.SettingsStatusActionsLabel -> stringResource(Res.string.settings_status_actions_label, *values)
+            PlatformString.SettingsStatusVersionLabel -> stringResource(Res.string.settings_status_version_label, *values)
+            PlatformString.SettingsStatusConfigLabel -> stringResource(Res.string.settings_status_config_label, *values)
+            PlatformString.SettingsConfigDescription -> stringResource(Res.string.settings_config_description, *values)
+            PlatformString.SettingsCacheDescription -> stringResource(Res.string.settings_cache_description, *values)
+            PlatformString.SettingsStatusDescription -> stringResource(Res.string.settings_status_description, *values)
         }
     }
 }

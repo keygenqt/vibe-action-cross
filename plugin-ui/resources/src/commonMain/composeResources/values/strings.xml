@@ -16,4 +16,12 @@
 
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
+    <string name="settings_open_config_button">Open config file</string>
+    <string name="settings_clean_cache_button">Clean cache</string>
+    <string name="settings_status_actions_label">Actions</string>
+    <string name="settings_status_version_label">Version</string>
+    <string name="settings_status_config_label">Config</string>
+    <string name="settings_config_description">Vibe Action's configuration is a single YAML file, edited directly.</string>
+    <string name="settings_cache_description">Clears all vibe-action cache. Safe to run anytime.</string>
+    <string name="settings_status_description">Detailed information about the vibe-action CLI application.</string>
 </resources>

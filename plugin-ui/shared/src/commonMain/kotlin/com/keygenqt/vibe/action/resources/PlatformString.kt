@@ -21,4 +21,12 @@ enum class PlatformString {
     HistoryTitle,
     // Settings screen
     SettingsTitle,
+    SettingsConfigDescription,
+    SettingsOpenConfigButton,
+    SettingsCacheDescription,
+    SettingsCleanCacheButton,
+    SettingsStatusDescription,
+    SettingsStatusActionsLabel,
+    SettingsStatusVersionLabel,
+    SettingsStatusConfigLabel,
 }
