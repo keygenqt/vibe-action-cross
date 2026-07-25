@@ -16,9 +16,12 @@ class VsCodeApi(private val raw: dynamic) {
     private var nextRequestId = 0
     private val pendingCallbacks = mutableMapOf<Int, (dynamic) -> Unit>()
 
+    /** Requests whose callback was never invoked — logged periodically, not on every send. */
+    private var lastPendingLogSize = 0
+
     init {
         window.addEventListener("message", { event: Event ->
-            val data = event.asDynamic().data
+            val data = event.asDynamic().data ?: return@addEventListener
             val requestId = data.requestId.unsafeCast<Int?>()
             if (requestId != null) {
                 pendingCallbacks.remove(requestId)?.invoke(data.result)
@@ -34,6 +37,14 @@ class VsCodeApi(private val raw: dynamic) {
         if (onResult != null && requestId != null) {
             pendingCallbacks[requestId] = onResult
         }
+
+        // Leak detector: a callback is removed only when the host replies.
+        // If the host handler fails to post a response, entries accumulate silently.
+        if (pendingCallbacks.size > lastPendingLogSize + PENDING_LOG_STEP) {
+            console.warn("VsCodeApi: ${pendingCallbacks.size} pending callbacks — possible response leak")
+            lastPendingLogSize = pendingCallbacks.size
+        }
+
         raw.postMessage(
             kotlin.js.json(
                 Pair("target", target),
@@ -41,5 +52,9 @@ class VsCodeApi(private val raw: dynamic) {
                 Pair("requestId", requestId),
             ),
         )
+    }
+
+    private companion object {
+        const val PENDING_LOG_STEP = 10
     }
 }

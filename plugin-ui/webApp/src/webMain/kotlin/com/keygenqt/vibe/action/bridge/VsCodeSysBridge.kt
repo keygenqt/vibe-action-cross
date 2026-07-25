@@ -5,7 +5,12 @@
 package com.keygenqt.vibe.action.bridge
 
 import kotlinx.browser.window
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
 import org.w3c.dom.events.Event
+import kotlin.coroutines.resume
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * VS Code implementation of the system bridge, delegating notifications and dialogs
@@ -13,6 +18,12 @@ import org.w3c.dom.events.Event
  */
 class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
 
+    /**
+     * Single-slot callbacks for the currently running CLI process.
+     * The extension host supports concurrent processes (targets are passed per call),
+     * but this bridge does not: a second runCli would silently overwrite the first
+     * call's callbacks, leaving its coroutine hanging. Guarded below.
+     */
     private var cliEventCallback: ((String) -> Unit)? = null
     private var cliDoneCallback: ((Int) -> Unit)? = null
 
@@ -69,11 +80,20 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     /**
      * Runs vibe-action CLI via extension host child_process.spawn.
      * Events stream back through postMessage with targets "cliEvent"/"cliDone".
+     *
+     * Throws [IllegalStateException] if another CLI process is already running —
+     * concurrent calls are not supported (callbacks would be overwritten).
      */
     override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> Unit) =
         { args, onEvent, onDone ->
+            check(cliDoneCallback == null) { "Concurrent runCli is not supported by VsCodeSysBridge" }
             cliEventCallback = onEvent
-            cliDoneCallback = onDone
+            cliDoneCallback = { code ->
+                // Clear slots before notifying — the bridge is reusable immediately after.
+                cliEventCallback = null
+                cliDoneCallback = null
+                onDone(code)
+            }
             api.send("runCli", arrayOf(args.toTypedArray(), "cliEvent", "cliDone"))
         }
 
@@ -83,5 +103,31 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
      */
     override val openFile: ((path: String) -> Unit) = { path ->
         api.send("openFile", arrayOf(path))
+    }
+
+    /**
+     * Checks if a file exists at the given path via bridge API.
+     * Times out if the extension host never responds (its callback would
+     * otherwise leak in VsCodeApi's pending map forever).
+     */
+    override val fileExists: (suspend (String) -> Boolean)? = { path ->
+        try {
+            withTimeout(FILE_EXISTS_TIMEOUT) {
+                suspendCancellableCoroutine { cont ->
+                    api.send(
+                        target = "fileExists",
+                        args = arrayOf(path)
+                    ) { result -> cont.resume(result as? Boolean ?: false) }
+                }
+            }
+        } catch (e: TimeoutCancellationException) {
+            // The orphaned callback remains in VsCodeApi until (if ever) the host
+            // responds — acceptable, the watchdog in VsCodeApi will report a leak.
+            false
+        }
+    }
+
+    private companion object {
+        val FILE_EXISTS_TIMEOUT = 5.seconds
     }
 }

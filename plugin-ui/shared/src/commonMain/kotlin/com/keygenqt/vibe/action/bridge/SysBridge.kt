@@ -36,6 +36,13 @@ interface SysBridge {
      * Opens a file in the platform's native editor/viewer.
      */
     val openFile: ((path: String) -> Unit)?
+
+    /**
+     * Checks whether a file exists at the given absolute path.
+     * Suspends until the result is available. On platforms with synchronous
+     * I/O the call returns immediately.
+     */
+    val fileExists: (suspend (String) -> Boolean)?
 }
 
 /**
@@ -47,4 +54,5 @@ open class SysBridgeEmpty : SysBridge {
     override val onThemeChanged: ((onChanged: () -> Unit) -> (() -> Unit))? = null
     override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> Unit)? = null
     override val openFile: ((path: String) -> Unit)? = null
+    override val fileExists: (suspend (String) -> Boolean)? = null
 }

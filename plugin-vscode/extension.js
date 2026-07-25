@@ -11,6 +11,7 @@ const cliPath = process.env.VIBE_ACTION_CLI_PATH || 'vibe-action'
 
 /**
  * Handles runCli command: spawns vibe-action process and streams NDJSON output.
+ * All stdout lines are forwarded as-is — the Kotlin side decides what is valid JSON.
  */
 function handleRunCli(webview, args, requestId) {
   const [cmdArgs, eventTarget, doneTarget] = args
@@ -19,16 +20,22 @@ function handleRunCli(webview, args, requestId) {
     env: { ...process.env, VIBE_LOG_TYPE: 'json' }
   })
 
+  // Guard against double onDone: Node fires both 'error' and 'close'
+  // when spawn fails (e.g. ENOENT — CLI not found in PATH).
+  let finished = false
+  const done = code => {
+    if (finished) return
+    finished = true
+    webview.postMessage({ target: doneTarget, args: [code] })
+  }
+
   let buffer = ''
   proc.stdout.on('data', data => {
     buffer += data.toString()
     const lines = buffer.split(/\r?\n/)
     buffer = lines.pop() || ''
     lines.filter(l => l.trim()).forEach(line => {
-      if (line.startsWith('{')) {
-        console.log('JSON line:', line)  // Временный лог
-        webview.postMessage({ target: eventTarget, args: [line] })
-      }
+      webview.postMessage({ target: eventTarget, args: [line] })
     })
   })
 
@@ -38,11 +45,17 @@ function handleRunCli(webview, args, requestId) {
 
   proc.on('error', err => {
     console.error('spawn error:', err)
-    webview.postMessage({ target: doneTarget, args: [-1] })
+    done(-1)
   })
 
   proc.on('close', code => {
-    webview.postMessage({ target: doneTarget, args: [code] })
+    // Flush the trailing line if the process didn't terminate it with \n
+    const tail = buffer.trim()
+    if (tail) {
+      webview.postMessage({ target: eventTarget, args: [tail] })
+    }
+    // 'close' may fire with null code when the process was killed by a signal
+    done(code == null ? -1 : code)
   })
 
   if (requestId != null) {
@@ -56,10 +69,19 @@ function handleRunCli(webview, args, requestId) {
 function handleOpenFile(webview, args, requestId) {
   const [filePath] = args
   const uri = vscode.Uri.file(filePath)
-  vscode.window.showTextDocument(uri)
-  if (requestId != null) {
-    webview.postMessage({ requestId, result: true })
-  }
+  vscode.window.showTextDocument(uri).then(
+      () => {
+        if (requestId != null) {
+          webview.postMessage({ requestId, result: true })
+        }
+      },
+      err => {
+        console.error('openFile failed:', err)
+        if (requestId != null) {
+          webview.postMessage({ requestId, result: false })
+        }
+      }
+  )
 }
 
 /**
@@ -83,7 +105,7 @@ function activate(context) {
           .readFileSync(file, 'utf8')
           .replace('<head>', `<head><base href="${baseUri}">`)
           .replace(/(href|src)="([^"]+)"/g, (match, attr, rel) => {
-            if (rel.startsWith('http')) return match
+            if (/^(https?:|data:|#)/.test(rel)) return match
             const uri = webviewView.webview.asWebviewUri(vscode.Uri.file(path.join(bundleDir, rel)))
             return `${attr}="${uri}"`
           })
@@ -106,6 +128,14 @@ function activate(context) {
 
         if (target === 'openFile') {
           handleOpenFile(webviewView.webview, args, requestId)
+          return
+        }
+
+        if (target === 'fileExists') {
+          const exists = fs.existsSync(args[0])
+          if (requestId != null) {
+            webviewView.webview.postMessage({ requestId, result: exists })
+          }
           return
         }
 

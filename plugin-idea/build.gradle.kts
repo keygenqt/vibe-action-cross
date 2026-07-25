@@ -42,10 +42,14 @@ dependencies {
 // configurations.all — the latter also breaks the Kotlin compiler's own classpath
 // (it needs its own copies of both for the K2 daemon).
 configurations.named("runtimeClasspath") {
+    // Coroutines – already provided by bundled Kotlin plugin
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+    // Serialization – provided by IDE
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core")
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-core-jvm")
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json")
+    exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-serialization-json-jvm")
 }
 
 /**
