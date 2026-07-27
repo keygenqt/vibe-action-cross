@@ -4,9 +4,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,24 +24,60 @@ fun MainHeaderActions(
     onNavigateToHistory: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onRefresh: () -> Unit,
+    isRefreshing: Boolean,
 ) {
     val env = ViewEnvironment.current
 
-    IconButton(onClick = onNavigateToHistory, modifier = Modifier.size(24.dp)) {
+    IconButton(
+        onClick = onRefresh,
+        enabled = !isRefreshing,
+        modifier = Modifier.size(24.dp)
+    ) {
+        if (isRefreshing) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(16.dp),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = env.bridge.res.string(PlatformString.CommonRefresh),
+                modifier = Modifier.size(16.dp),
+            )
+        }
+    }
+
+    IconButton(
+        onClick = onNavigateToHistory,
+        modifier = Modifier.size(24.dp),
+        enabled = !isRefreshing,
+    ) {
         Icon(
             imageVector = Icons.Default.History,
             contentDescription = env.bridge.res.string(PlatformString.HistoryTitle),
             modifier = Modifier.size(16.dp),
         )
     }
-    IconButton(onClick = onNavigateToAbout, modifier = Modifier.size(24.dp)) {
+
+    IconButton(
+        onClick = onNavigateToAbout,
+        modifier = Modifier.size(24.dp),
+        enabled = !isRefreshing,
+    ) {
         Icon(
             imageVector = Icons.Default.Info,
             contentDescription = env.bridge.res.string(PlatformString.AboutTitle),
             modifier = Modifier.size(16.dp),
         )
     }
-    IconButton(onClick = onNavigateToSettings, modifier = Modifier.size(24.dp)) {
+
+    IconButton(
+        onClick = onNavigateToSettings,
+        modifier = Modifier.size(24.dp),
+        enabled = !isRefreshing,
+    ) {
         Icon(
             imageVector = Icons.Default.Settings,
             contentDescription = env.bridge.res.string(PlatformString.SettingsTitle),
@@ -46,3 +85,4 @@ fun MainHeaderActions(
         )
     }
 }
+

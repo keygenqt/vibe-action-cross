@@ -139,6 +139,26 @@ function activate(context) {
           return
         }
 
+        if (target === 'getSelectedText') {
+          const editor = vscode.window.activeTextEditor
+          const selectedText = editor ? editor.document.getText(editor.selection) : ""
+          if (requestId != null) {
+            webviewView.webview.postMessage({ requestId, result: selectedText })
+          }
+          return
+        }
+
+        if (target === 'replaceSelectedText') {
+          const editor = vscode.window.activeTextEditor
+          const newText = args[0]
+          if (editor && typeof newText === 'string') {
+            await editor.edit(editBuilder => {
+              editBuilder.replace(editor.selection, newText)
+            })
+          }
+          return
+        }
+
         if (typeof vscode.window[target] !== 'function') return
         const result = await vscode.window[target](...args)
         if (requestId != null) {

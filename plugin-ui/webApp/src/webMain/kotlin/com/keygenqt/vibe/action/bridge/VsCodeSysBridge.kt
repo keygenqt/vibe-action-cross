@@ -127,7 +127,24 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
         }
     }
 
+    /**
+     * Retrieves the currently selected text via the API and passes it to the provided callback.
+     */
+    override val getSelectedText: (((String?) -> Unit) -> Unit) = { onResult ->
+        api.send("getSelectedText", EMPTY_ARGS) { result ->
+            onResult(result as? String)
+        }
+    }
+
+    /**
+     * Replaces the currently selected text with the given newText via the API.
+     */
+    override val replaceSelectedText: ((String) -> Unit) = { newText ->
+        api.send("replaceSelectedText", arrayOf(newText))
+    }
+
     private companion object {
         val FILE_EXISTS_TIMEOUT = 5.seconds
+        val EMPTY_ARGS: Array<Any?> = emptyArray()
     }
 }

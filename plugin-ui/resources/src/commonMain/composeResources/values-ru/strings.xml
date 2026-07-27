@@ -24,4 +24,7 @@
     <string name="settings_config_description">Конфигурация Vibe Action — один YAML-файл, редактируется напрямую.</string>
     <string name="settings_cache_description">Очищает весь кеш vibe-action. Безопасно запускать в любой момент.</string>
     <string name="settings_status_description">Подробная информация о CLI-приложении vibe-action.</string>
+
+    <!-- Common -->
+    <string name="common_refresh">Обновить</string>
 </resources>

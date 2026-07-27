@@ -15,6 +15,7 @@ import com.keygenqt.vibe.action.models.builtInActionIds
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 
 class MainViewModel(
     env: Environment,
@@ -31,45 +33,66 @@ class MainViewModel(
     private val logger: Logger,
 ) : BaseViewModel(env, view) {
 
+    /**
+     * Holds the current list of actions displayed in the UI.
+     */
     private val _actions = MutableStateFlow<List<ActionModel>>(emptyList())
     val actions: StateFlow<List<ActionModel>> = _actions.asStateFlow()
 
+    /**
+     * Stores the id of the action whose detail section is expanded, or null if none.
+     */
     private val _expandedActionId = MutableStateFlow<String?>(null)
     val expandedActionId: StateFlow<String?> = _expandedActionId.asStateFlow()
 
+    /**
+     * Indicates whether a data loading operation is currently in progress.
+     */
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    /**
+     * Holds the last error message, or null if no error occurred.
+     */
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    /**
+     * Absolute path to the directory where custom action YAML files are stored.
+     */
     private var actionsPath: String? = null
 
-    // VM is a Koin singleton living for the whole app lifetime:
-    // the file-exists bridge is captured once — platform bridges never swap it.
+    /**
+     * VM is a Koin singleton living for the whole app lifetime:
+     * the file-exists bridge is captured once — platform bridges never swap it.
+     */
     private val fileExists: (suspend (String) -> Boolean)? = env.bridge.sys.fileExists
 
-    // Serializes loadData() calls — init and refresh() must not overlap.
+    /**
+     * Serializes loadData() calls — init and refresh() must not overlap.
+     */
     private val loadMutex = Mutex()
 
     init {
-        loadData()
+        loadData(0)
     }
 
     /**
      * Reloads CLI status and action list. Exposed for retry/pull-to-refresh —
      * the VM is a singleton, so [loadData] would otherwise run only once per app lifetime.
      */
-    fun refresh() = loadData()
+    fun refresh() = loadData(1000L)
 
     /**
      * Loads CLI status and action list via [CommandProvider].
      */
-    private fun loadData() {
+    private fun loadData(delay : Long) {
         viewModelScope.launch {
             loadMutex.withLock {
                 _isLoading.value = true
                 _error.value = null
+                // Artificial delay to prevent rapid re-execution of loadData
+                delay(delay.milliseconds)
                 try {
                     // Collect status output from CLI and extract actions path.
                     // A failing status must not block the action list —
@@ -133,17 +156,42 @@ class MainViewModel(
         }
     }
 
+    /**
+     * Toggles the expanded state of the action with the given id.
+     */
     fun toggleExpanded(id: String) {
         _expandedActionId.update { current -> if (current == id) null else id }
     }
 
+    /**
+     * Runs the action with the specified id, updates the text, and pastes it back.
+     */
     fun runAction(id: String) {
         val action = _actions.value.find { it.id == id }
-        val pathInfo = action?.yamlPath?.let { ", yamlPath=$it" } ?: ""
-        logger.d { "Запуск экшена: $id$pathInfo" }
-        // TODO: делегировать запуск в CommandProvider, когда появится runAction()
+        logger.d { "Actions: $action" }
+        // @todo
+        env.bridge.sys.getSelectedText?.invoke { text ->
+            logger.d { "Получили выделенный текст: $text" }
+            if (!text.isNullOrEmpty()) {
+                viewModelScope.launch {
+                    val outputs = commandProvider.comment(query = text)
+                    val newCode = outputs
+                        .filterIsInstance<CommandOutput.Success>()
+                        .firstOrNull()?.message ?: ""
+                    if (newCode.isNotEmpty()) {
+                        env.bridge.sys.replaceSelectedText?.invoke(newCode)
+                    } else {
+                        logger.w { "Вывод пуст, заменять нечего" }
+                    }
+                }
+            }
+        }
     }
 
+
+    /**
+     * Deletes the custom action with the given id (only custom actions are allowed).
+     */
     fun deleteAction(id: String) {
         val action = _actions.value.find { it.id == id } ?: return
         if (!action.isCustom) {

@@ -18,6 +18,7 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.about_requireme
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.architecture_diagram
 import vibe_action_cross.plugin_ui.resources.generated.resources.app_icon
+import vibe_action_cross.plugin_ui.resources.generated.resources.common_refresh
 import vibe_action_cross.plugin_ui.resources.generated.resources.history_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.main_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_cache_description
@@ -74,6 +75,7 @@ class ComposeResBridge : ResBridge {
             PlatformString.SettingsConfigDescription -> stringResource(Res.string.settings_config_description, *values)
             PlatformString.SettingsCacheDescription -> stringResource(Res.string.settings_cache_description, *values)
             PlatformString.SettingsStatusDescription -> stringResource(Res.string.settings_status_description, *values)
+            PlatformString.CommonRefresh -> stringResource(Res.string.common_refresh, *values)
         }
     }
 }

@@ -43,16 +43,14 @@ interface SysBridge {
      * I/O the call returns immediately.
      */
     val fileExists: (suspend (String) -> Boolean)?
-}
 
-/**
- * No-op [SysBridge] implementation for platforms without native system integrations.
- */
-open class SysBridgeEmpty : SysBridge {
-    override val showNotification: ((title: String, message: String) -> Unit)? = null
-    override val showConfirmDialog: ((title: String, message: String, onResult: (Boolean) -> Unit) -> Unit)? = null
-    override val onThemeChanged: ((onChanged: () -> Unit) -> (() -> Unit))? = null
-    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> Unit)? = null
-    override val openFile: ((path: String) -> Unit)? = null
-    override val fileExists: (suspend (String) -> Boolean)? = null
+    /**
+     * Callback that retrieves the currently selected text and passes it to the provided handler.
+     */
+    val getSelectedText: (((String?) -> Unit) -> Unit)?
+
+    /**
+     * Callback that replaces the currently selected text with the given string.
+     */
+    val replaceSelectedText: ((String) -> Unit)?
 }

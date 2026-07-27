@@ -58,6 +58,7 @@ class PluginResBridge : ResBridge {
             PlatformString.SettingsConfigDescription -> "settings.config.description"
             PlatformString.SettingsCacheDescription -> "settings.cache.description"
             PlatformString.SettingsStatusDescription -> "settings.status.description"
+            PlatformString.CommonRefresh -> "common.refresh"
         }
         return MessageBundle.message(key, *params)
     }

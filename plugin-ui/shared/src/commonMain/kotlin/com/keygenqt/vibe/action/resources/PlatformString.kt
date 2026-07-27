@@ -29,4 +29,6 @@ enum class PlatformString {
     SettingsStatusActionsLabel,
     SettingsStatusVersionLabel,
     SettingsStatusConfigLabel,
+    // Common
+    CommonRefresh,
 }

@@ -63,6 +63,15 @@ sealed class CommandOutput {
     ) : CommandOutput()
 
     /**
+     * Final successful result containing the generated text/code message.
+     */
+    @Serializable
+    @SerialName("success")
+    data class Success(
+        val message: String,
+    ) : CommandOutput()
+
+    /**
      * Fallback for unrecognized messages, preserves raw `level` and `value`.
      */
     @Serializable

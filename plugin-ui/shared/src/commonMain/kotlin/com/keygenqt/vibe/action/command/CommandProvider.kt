@@ -45,6 +45,12 @@ class CommandProvider(
     suspend fun actions(): List<CommandOutput> = execute(listOf())
 
     /**
+     * Generates technical comments for the provided code snippet via CLI.
+     * @todo
+     */
+    suspend fun comment(query: String): List<CommandOutput> = execute(listOf("comment", "--query", query))
+
+    /**
      * General command execution, suspending until CLI process finishes.
      *
      * Captures the current generation on entry; bumps it so that any previously
