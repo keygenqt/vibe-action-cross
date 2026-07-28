@@ -5,6 +5,8 @@ import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.keygenqt.vibe.action.command.ActionApi
+import com.keygenqt.vibe.action.command.ActionArg
 
 /**
  * A single runnable flow shown in the Actions list — either a built-in
@@ -16,6 +18,8 @@ data class ActionModel(
     val description: String,
     val isCustom: Boolean,
     val yamlPath: String? = null,
+    val args: List<ActionArg> = emptyList(),
+    val api: ActionApi,
 )
 
 /**

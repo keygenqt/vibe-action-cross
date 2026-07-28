@@ -45,9 +45,14 @@ interface SysBridge {
     val fileExists: (suspend (String) -> Boolean)?
 
     /**
-     * Callback that retrieves the currently selected text and passes it to the provided handler.
+     * Retrieves the currently selected text and passes it to the provided handler.
      */
     val getSelectedText: (((String?) -> Unit) -> Unit)?
+
+    /**
+     * Retrieves the current text from the system clipboard.
+     */
+    val getClipboardText: (((String?) -> Unit) -> Unit)?
 
     /**
      * Callback that replaces the currently selected text with the given string.

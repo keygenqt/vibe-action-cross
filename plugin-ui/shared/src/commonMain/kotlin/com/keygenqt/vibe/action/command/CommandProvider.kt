@@ -6,6 +6,7 @@ package com.keygenqt.vibe.action.command
 
 import co.touchlab.kermit.Logger
 import com.keygenqt.vibe.action.bridge.Environment
+import com.keygenqt.vibe.action.models.ActionModel
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
@@ -45,10 +46,62 @@ class CommandProvider(
     suspend fun actions(): List<CommandOutput> = execute(listOf())
 
     /**
-     * Generates technical comments for the provided code snippet via CLI.
-     * @todo
+     * Executes an action with arguments resolved from IDE sources (selection, clipboard).
+     *
+     * If a source yields empty text, the argument is omitted, allowing the CLI
+     * to fall back to its own `default` value (e.g., `{system_clipboard}`).
      */
-    suspend fun comment(query: String): List<CommandOutput> = execute(listOf("comment", "--query", query))
+    suspend fun executeAction(action: ActionModel): List<CommandOutput> {
+        val args = mutableListOf(action.id)
+
+        for (arg in action.args) {
+            // Retrieve the argument source; skip if not defined.
+            val source = action.api.args[arg.name] ?: continue
+
+            // Resolve the text value from the specified source (selection or clipboard).
+            val value: String? = when (source) {
+                ActionApiSource.Selection -> getSuspendValue(env.bridge.sys.getSelectedText)
+                ActionApiSource.Clipboard -> getSuspendValue(env.bridge.sys.getClipboardText)
+            }
+
+            // Skip argument if the resolved value is empty, allowing default CLI fallback.
+            if (value.isNullOrEmpty()) continue
+
+            // Construct the flag: use short form if available, else long form.
+            val flag = if (arg.short != null) "-${arg.short}" else "--${arg.name}"
+
+            // Add the argument to the command line according to its type (bool or regular).
+            when (arg.input) {
+                "bool" -> {
+                    val isTrue = value.lowercase() in listOf("true", "yes", "да", "1")
+                    if (isTrue) args.add(flag)
+                }
+
+                else -> {
+                    args.add(flag)
+                    args.add(value)
+                }
+            }
+        }
+
+        return execute(args)
+    }
+
+    /**
+     * Helper to call the bridge's callback-based API within a coroutine.
+     */
+    private suspend fun getSuspendValue(callback: (((String?) -> Unit) -> Unit)?): String? {
+        if (callback == null) return null
+        return suspendCancellableCoroutine { cont ->
+            try {
+                callback { text ->
+                    if (cont.isActive) cont.resume(text)
+                }
+            } catch (e: Exception) {
+                if (cont.isActive) cont.resumeWithException(e)
+            }
+        }
+    }
 
     /**
      * General command execution, suspending until CLI process finishes.

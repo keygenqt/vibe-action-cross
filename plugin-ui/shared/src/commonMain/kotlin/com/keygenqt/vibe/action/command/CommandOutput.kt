@@ -45,7 +45,7 @@ sealed class CommandOutput {
     @Serializable
     @SerialName("status")
     data class Status(
-        val actions: String,
+        val actions: Int,
         val version: String,
         val config: String,
         @SerialName("actions_path")
@@ -53,13 +53,15 @@ sealed class CommandOutput {
     ) : CommandOutput()
 
     /**
-     * Action description with name and about text.
+     * Action description with name, about text, and CLI arguments.
      */
     @Serializable
     @SerialName("actions")
     data class Actions(
         val name: String,
         val about: String,
+        val args: List<ActionArg> = emptyList(),
+        val api: ActionApi? = null,
     ) : CommandOutput()
 
     /**
@@ -86,3 +88,35 @@ sealed class CommandOutput {
     @Serializable
     object Unknown : CommandOutput()
 }
+
+/**
+ * CLI argument definition for an action.
+ */
+@Serializable
+data class ActionArg(
+    val name: String,
+    val short: String? = null,
+    val input: String,
+    val help: String? = null,
+    val default: String? = null,
+)
+
+/**
+ * Sources for IDE plugin integration.
+ */
+@Serializable
+enum class ActionApiSource {
+    @SerialName("selection")
+    Selection,
+
+    @SerialName("clipboard")
+    Clipboard,
+}
+
+/**
+ * IDE plugin integration metadata.
+ */
+@Serializable
+data class ActionApi(
+    val args: Map<String, ActionApiSource> = emptyMap(),
+)

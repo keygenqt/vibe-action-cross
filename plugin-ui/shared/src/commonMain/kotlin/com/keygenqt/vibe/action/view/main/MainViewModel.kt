@@ -12,15 +12,11 @@ import com.keygenqt.vibe.action.command.CommandOutput
 import com.keygenqt.vibe.action.command.CommandProvider
 import com.keygenqt.vibe.action.models.ActionModel
 import com.keygenqt.vibe.action.models.builtInActionIds
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.cancellation.CancellationException
@@ -86,7 +82,7 @@ class MainViewModel(
     /**
      * Loads CLI status and action list via [CommandProvider].
      */
-    private fun loadData(delay : Long) {
+    private fun loadData(delay: Long) {
         viewModelScope.launch {
             loadMutex.withLock {
                 _isLoading.value = true
@@ -111,16 +107,20 @@ class MainViewModel(
 
                     // Collect action list from CLI and map to ActionModel instances.
                     val actionOutputs = commandProvider.actions()
-                    val models = actionOutputs.filterIsInstance<CommandOutput.Actions>().map { out ->
-                        val isCustom = out.name !in builtInActionIds
-                        ActionModel(
-                            id = out.name,
-                            name = out.name.replaceFirstChar { it.uppercase() },
-                            description = out.about,
-                            isCustom = isCustom,
-                            yamlPath = null, // resolved below for custom actions only
-                        )
-                    }
+                    val models = actionOutputs.filterIsInstance<CommandOutput.Actions>()
+                        .filter { it.api != null }
+                        .map { out ->
+                            val isCustom = out.name !in builtInActionIds
+                            ActionModel(
+                                id = out.name,
+                                name = out.name.replaceFirstChar { it.uppercase() },
+                                description = out.about,
+                                isCustom = isCustom,
+                                args = out.args,
+                                api = out.api!!,
+                                yamlPath = null, // resolved below for custom actions only
+                            )
+                        }
 
                     // Resolve yaml files for custom actions (.yaml, then .yml).
                     // Checks are fanned out in parallel: on VS Code each call is a
@@ -167,27 +167,27 @@ class MainViewModel(
      * Runs the action with the specified id, updates the text, and pastes it back.
      */
     fun runAction(id: String) {
-        val action = _actions.value.find { it.id == id }
+        val action = _actions.value.find { it.id == id } ?: return
         logger.d { "Actions: $action" }
-        // @todo
-        env.bridge.sys.getSelectedText?.invoke { text ->
-            logger.d { "Получили выделенный текст: $text" }
-            if (!text.isNullOrEmpty()) {
-                viewModelScope.launch {
-                    val outputs = commandProvider.comment(query = text)
-                    val newCode = outputs
-                        .filterIsInstance<CommandOutput.Success>()
-                        .firstOrNull()?.message ?: ""
-                    if (newCode.isNotEmpty()) {
-                        env.bridge.sys.replaceSelectedText?.invoke(newCode)
-                    } else {
-                        logger.w { "Вывод пуст, заменять нечего" }
-                    }
+        viewModelScope.launch {
+            try {
+                val outputs = commandProvider.executeAction(action)
+                val newCode = outputs
+                    .filterIsInstance<CommandOutput.Success>()
+                    .firstOrNull()?.message ?: ""
+                if (newCode.isNotEmpty()) {
+                    env.bridge.sys.replaceSelectedText?.invoke(newCode)
+                } else {
+                    logger.w { "Вывод пуст, заменять нечего" }
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                logger.e(e) { "Failed to execute action ${action.id}" }
+                _error.value = e.message ?: "Unknown error"
             }
         }
     }
-
 
     /**
      * Deletes the custom action with the given id (only custom actions are allowed).

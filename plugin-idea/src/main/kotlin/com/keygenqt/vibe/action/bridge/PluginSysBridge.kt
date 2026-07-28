@@ -12,6 +12,11 @@ import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageDialogBuilder
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Key
@@ -19,16 +24,8 @@ import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.LocalFileSystem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
-import com.intellij.util.concurrency.annotations.RequiresEdt
-import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.application.WriteAction
-import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.ide.CopyPasteManager
 import java.awt.datatransfer.DataFlavor
-import java.awt.datatransfer.StringSelection
+import java.io.File
 
 /**
  * IntelliJ plugin implementation of the system bridge.
@@ -162,20 +159,36 @@ class PluginSysBridge(val project: Project) : SysBridge {
      * Retrieves the currently selected text from the active editor and passes it to the provided callback.
      */
     override val getSelectedText: (((String?) -> Unit) -> Unit) = { onResult ->
-        val text = getActiveEditor()?.selectionModel?.selectedText
-        onResult(text)
+        ApplicationManager.getApplication().invokeLater {
+            val text = getActiveEditor()?.selectionModel?.selectedText
+            onResult(text)
+        }
+    }
+
+
+    /**
+     * Retrieves the current text from the system clipboard.
+     */
+    override val getClipboardText: (((String?) -> Unit) -> Unit) = { onResult ->
+        ApplicationManager.getApplication().invokeLater {
+            val text = CopyPasteManager.getInstance()
+                .getContents<String?>(DataFlavor.stringFlavor)
+            onResult(text)
+        }
     }
 
     /**
      * Replaces the currently selected text in the active editor with the given newText.
      */
     override val replaceSelectedText: ((String) -> Unit) = { newText ->
-        getActiveEditor()?.let { editor ->
-            val selectionModel = editor.selectionModel
-            WriteCommandAction.runWriteCommandAction(project) {
-                val start = selectionModel.selectionStart
-                val end = selectionModel.selectionEnd
-                editor.document.replaceString(start, end, newText)
+        ApplicationManager.getApplication().invokeLater {
+            getActiveEditor()?.let { editor ->
+                val selectionModel = editor.selectionModel
+                WriteCommandAction.runWriteCommandAction(project) {
+                    val start = selectionModel.selectionStart
+                    val end = selectionModel.selectionEnd
+                    editor.document.replaceString(start, end, newText)
+                }
             }
         }
     }

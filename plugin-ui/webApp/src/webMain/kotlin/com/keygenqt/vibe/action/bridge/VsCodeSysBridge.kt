@@ -137,6 +137,15 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     }
 
     /**
+     * Retrieves the current text from the system clipboard via the API.
+     */
+    override val getClipboardText: (((String?) -> Unit) -> Unit) = { onResult ->
+        api.send("getClipboardText", EMPTY_ARGS) { result ->
+            onResult(result as? String)
+        }
+    }
+
+    /**
      * Replaces the currently selected text with the given newText via the API.
      */
     override val replaceSelectedText: ((String) -> Unit) = { newText ->
