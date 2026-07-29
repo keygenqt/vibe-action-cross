@@ -6,13 +6,11 @@ package com.keygenqt.vibe.action.command
 
 import co.touchlab.kermit.Logger
 import com.keygenqt.vibe.action.bridge.Environment
-import com.keygenqt.vibe.action.models.ActionModel
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import kotlin.concurrent.Volatile
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -28,14 +26,6 @@ class CommandProvider(
     private val runCli get() = env.bridge.sys.runCli ?: error("runCli is not available")
 
     /**
-     * Generation counter. Every new command invalidates the results of all
-     * commands started before it that have not finished yet — a newer process
-     * supersedes them, so their (stale) results must not be applied.
-     */
-    @Volatile
-    private var generation = 0
-
-    /**
      * Executes 'status' command and returns list of outputs.
      */
     suspend fun status(): List<CommandOutput> = execute(listOf("status"))
@@ -46,77 +36,17 @@ class CommandProvider(
     suspend fun actions(): List<CommandOutput> = execute(listOf())
 
     /**
-     * Executes an action with arguments resolved from IDE sources (selection, clipboard).
-     *
-     * If a source yields empty text, the argument is omitted, allowing the CLI
-     * to fall back to its own `default` value (e.g., `{system_clipboard}`).
-     */
-    suspend fun executeAction(action: ActionModel): List<CommandOutput> {
-        val args = mutableListOf(action.id)
-
-        for (arg in action.args) {
-            // Retrieve the argument source; skip if not defined.
-            val source = action.api.args[arg.name] ?: continue
-
-            // Resolve the text value from the specified source (selection or clipboard).
-            val value: String? = when (source) {
-                ActionApiSource.Selection -> getSuspendValue(env.bridge.sys.getSelectedText)
-                ActionApiSource.Clipboard -> getSuspendValue(env.bridge.sys.getClipboardText)
-            }
-
-            // Skip argument if the resolved value is empty, allowing default CLI fallback.
-            if (value.isNullOrEmpty()) continue
-
-            // Construct the flag: use short form if available, else long form.
-            val flag = if (arg.short != null) "-${arg.short}" else "--${arg.name}"
-
-            // Add the argument to the command line according to its type (bool or regular).
-            when (arg.input) {
-                "bool" -> {
-                    val isTrue = value.lowercase() in listOf("true", "yes", "да", "1")
-                    if (isTrue) args.add(flag)
-                }
-
-                else -> {
-                    args.add(flag)
-                    args.add(value)
-                }
-            }
-        }
-
-        return execute(args)
-    }
-
-    /**
-     * Helper to call the bridge's callback-based API within a coroutine.
-     */
-    private suspend fun getSuspendValue(callback: (((String?) -> Unit) -> Unit)?): String? {
-        if (callback == null) return null
-        return suspendCancellableCoroutine { cont ->
-            try {
-                callback { text ->
-                    if (cont.isActive) cont.resume(text)
-                }
-            } catch (e: Exception) {
-                if (cont.isActive) cont.resumeWithException(e)
-            }
-        }
-    }
-
-    /**
      * General command execution, suspending until CLI process finishes.
      *
-     * Captures the current generation on entry; bumps it so that any previously
-     * running command becomes stale. When this command finishes, it applies its
-     * result only if no newer command has started in the meantime.
+     * Cancellation is handled via coroutine cancellation. If a newer command
+     * is started by the ViewModel (which cancels the previous Job), the
+     * continuation becomes inactive, and the result of the lingering process
+     * is safely discarded.
      */
-    private suspend fun execute(args: List<String>): List<CommandOutput> {
-        // Invalidate all previous in-flight commands, then take the new generation.
-        val myGeneration = ++generation
-
-        val outputs = try {
-            withTimeout(CLI_TIMEOUT) {
-                suspendCancellableCoroutine<List<CommandOutput>> { cont ->
+    suspend fun execute(args: List<String>): List<CommandOutput> {
+        try {
+            return withTimeout(CLI_TIMEOUT) {
+                suspendCancellableCoroutine { cont ->
                     val result = mutableListOf<CommandOutput>()
                     try {
                         runCli(
@@ -124,9 +54,10 @@ class CommandProvider(
                             { line -> result.add(parseCommandOutputLine(line)) },
                             { exitCode ->
                                 if (exitCode == 0) {
-                                    cont.resume(result.toList())
+                                    // Check isActive to avoid resuming a cancelled continuation
+                                    if (cont.isActive) cont.resume(result.toList())
                                 } else {
-                                    cont.resumeWithException(
+                                    if (cont.isActive) cont.resumeWithException(
                                         RuntimeException(
                                             "Command ${args.ifEmpty { listOf("default") }.joinToString(" ")} " +
                                                     "failed with exit code $exitCode"
@@ -142,7 +73,7 @@ class CommandProvider(
                         // ExecutionException when the CLI binary is not found in PATH).
                         // Resume here — the outer resumeWithException would throw
                         // IllegalStateException on an already-resumed continuation.
-                        cont.resumeWithException(e)
+                        if (cont.isActive) cont.resumeWithException(e)
                     }
                 }
             }
@@ -155,12 +86,6 @@ class CommandProvider(
                         "timed out after ${CLI_TIMEOUT}s", e
             )
         }
-
-        // A newer command started while this one was running — discard the stale result.
-        if (myGeneration != generation) {
-            throw CancellationException("Superseded by a newer command")
-        }
-        return outputs
     }
 
     /**

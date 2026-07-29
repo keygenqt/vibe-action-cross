@@ -55,7 +55,17 @@ interface SysBridge {
     val getClipboardText: (((String?) -> Unit) -> Unit)?
 
     /**
+     * Writes the given string to the system clipboard.
+     */
+    val setClipboardText: ((String) -> Unit)?
+
+    /**
      * Callback that replaces the currently selected text with the given string.
      */
     val replaceSelectedText: ((String) -> Unit)?
+
+    /**
+     * Callback that shows a multiline text dialog/output to the user.
+     */
+    val showTextDialog: ((title: String, text: String) -> Unit)?
 }

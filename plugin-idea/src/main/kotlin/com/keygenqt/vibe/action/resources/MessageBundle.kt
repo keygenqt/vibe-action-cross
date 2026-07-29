@@ -20,9 +20,7 @@ internal object MessageBundle {
      */
     @JvmStatic
     fun message(
-        key:
-        @PropertyKey(resourceBundle = BUNDLE)
-        String,
+        key: @PropertyKey(resourceBundle = BUNDLE) String,
         vararg params: Any?,
     ): String = instance.getMessage(key, *params)
 }

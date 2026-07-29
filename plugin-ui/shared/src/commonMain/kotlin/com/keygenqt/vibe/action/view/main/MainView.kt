@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.keygenqt.vibe.action.bridge.ViewEnvironment
+import com.keygenqt.vibe.action.components.NotificationHandler
 import com.keygenqt.vibe.action.components.ScreenScaffold
 import com.keygenqt.vibe.action.lottie.LoadingLottieAnimation
 import com.keygenqt.vibe.action.resources.PlatformIcon
@@ -38,6 +40,13 @@ fun MainView(
     val isLoading by viewModel.isLoading.collectAsState()
     val actions by viewModel.actions.collectAsState()
     val expandedActionId by viewModel.expandedActionId.collectAsState()
+    val runningActionId by viewModel.runningActionId.collectAsState()
+    val notification by viewModel.notification.collectAsState()
+
+    NotificationHandler(
+        notification = notification,
+        onClear = viewModel::clearNotification,
+    )
 
     ScreenScaffold(
         scrollable = !isLoading,
@@ -64,15 +73,17 @@ fun MainView(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                LoadingLottieAnimation(modifier = Modifier.fillMaxSize(),)
+                LoadingLottieAnimation(modifier = Modifier.fillMaxSize())
             }
         } else {
             ActionsToolbar(count = actions.size)
             ActionsList(
                 actions = actions,
                 expandedActionId = expandedActionId,
+                runningActionId = runningActionId,
                 onToggleExpanded = viewModel::toggleExpanded,
                 onRun = viewModel::runAction,
+                onCancel = viewModel::cancelAction,
                 onDelete = viewModel::deleteAction,
             )
         }

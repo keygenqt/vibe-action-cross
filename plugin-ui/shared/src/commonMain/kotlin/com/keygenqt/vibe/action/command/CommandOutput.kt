@@ -114,9 +114,25 @@ enum class ActionApiSource {
 }
 
 /**
+ * Targets for IDE plugin integration output routing.
+ */
+@Serializable
+enum class ActionApiTarget {
+    @SerialName("replace")
+    Replace,
+
+    @SerialName("clipboard")
+    Clipboard,
+
+    @SerialName("dialog")
+    Dialog,
+}
+
+/**
  * IDE plugin integration metadata.
  */
 @Serializable
 data class ActionApi(
     val args: Map<String, ActionApiSource> = emptyMap(),
+    val output: ActionApiTarget = ActionApiTarget.Replace,
 )

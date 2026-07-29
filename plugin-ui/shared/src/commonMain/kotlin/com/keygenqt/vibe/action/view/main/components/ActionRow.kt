@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.view.main.components
 
 import androidx.compose.foundation.background
@@ -5,11 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,15 +26,17 @@ import com.keygenqt.vibe.action.models.ActionModel
 import com.keygenqt.vibe.action.models.icon
 
 /**
- * A single action row: icon, name/description, circular play button.
- * Clicking the row body (not the play button) toggles the inline Edit/Delete menu.
+ * A single action row: icon, name/description, circular play/stop button.
+ * Clicking the row body (not the button) toggles the inline Edit/Delete menu.
  */
 @Composable
 fun ActionRow(
     action: ActionModel,
     expanded: Boolean,
+    isRunning: Boolean,
     onToggleExpanded: () -> Unit,
     onRun: () -> Unit,
+    onCancel: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -71,7 +73,11 @@ fun ActionRow(
                 )
             }
             Box(modifier = Modifier.padding(top = 10.dp)) {
-                ActionPlayButton(onClick = onRun)
+                ActionPlayButton(
+                    isRunning = isRunning,
+                    onRun = onRun,
+                    onCancel = onCancel,
+                )
             }
         }
 
@@ -84,22 +90,29 @@ fun ActionRow(
 }
 
 /**
- * Circular play button — runs this action immediately. Its own clickable
- * consumes the tap, so it doesn't also trigger the row's expand/collapse.
+ * Circular play/stop button — runs or cancels the action.
+ * Changes appearance depending on [isRunning].
  */
 @Composable
-fun ActionPlayButton(onClick: () -> Unit) {
+fun ActionPlayButton(
+    isRunning: Boolean,
+    onRun: () -> Unit,
+    onCancel: () -> Unit,
+) {
     Box(
         modifier = Modifier
             .size(28.dp)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primaryContainer)
-            .clickable(onClick = onClick),
+            .background(
+                if (isRunning) MaterialTheme.colorScheme.errorContainer
+                else MaterialTheme.colorScheme.primaryContainer
+            )
+            .clickable(onClick = if (isRunning) onCancel else onRun),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            imageVector = Icons.Default.PlayArrow,
-            contentDescription = "Run",
+            imageVector = if (isRunning) Icons.Default.Close else Icons.Default.PlayArrow,
+            contentDescription = if (isRunning) "Cancel" else "Run",
             tint = Color.White,
             modifier = Modifier.size(14.dp),
         )
@@ -143,4 +156,3 @@ fun ActionRowExpandedMenu(onEdit: () -> Unit, onDelete: () -> Unit) {
         }
     }
 }
-

@@ -42,7 +42,8 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
      * Shows a native VS Code toast via vscode.window.showInformationMessage.
      */
     override val showNotification: ((title: String, message: String) -> Unit) = { title, message ->
-        api.send("showInformationMessage", arrayOf("$title\n\n$message"))
+        val t = if (title.endsWith(".")) title else "$title."
+        api.send("showInformationMessage", arrayOf("$t\n\n$message"))
     }
 
     /**
@@ -137,6 +138,13 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     }
 
     /**
+     * Replaces the currently selected text with the given newText via the API.
+     */
+    override val replaceSelectedText: ((String) -> Unit) = { newText ->
+        api.send("replaceSelectedText", arrayOf(newText))
+    }
+
+    /**
      * Retrieves the current text from the system clipboard via the API.
      */
     override val getClipboardText: (((String?) -> Unit) -> Unit) = { onResult ->
@@ -146,10 +154,17 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     }
 
     /**
-     * Replaces the currently selected text with the given newText via the API.
+     * Writes the given text to the system clipboard via the API.
      */
-    override val replaceSelectedText: ((String) -> Unit) = { newText ->
-        api.send("replaceSelectedText", arrayOf(newText))
+    override val setClipboardText: ((String) -> Unit) = { newText ->
+        api.send("setClipboardText", arrayOf(newText))
+    }
+
+    /**
+     * Callback that shows a multiline text dialog/output to the user.
+     */
+    override val showTextDialog: ((title: String, text: String) -> Unit) = { title, text ->
+        api.send("showTextDialog", arrayOf(title, text))
     }
 
     private companion object {

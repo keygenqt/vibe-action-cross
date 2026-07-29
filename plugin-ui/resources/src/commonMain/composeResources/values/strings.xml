@@ -27,4 +27,16 @@
 
     <!-- Common -->
     <string name="common_refresh">Refresh</string>
+
+    <!-- Notifications -->
+    <string name="notification_load_error_title">Loading Error</string>
+    <string name="notification_load_error_desc">Failed to load actions: %1$s</string>
+
+    <string name="notification_action_completed_title">Action Completed</string>
+    <string name="notification_action_completed_desc">%1$s finished successfully</string>
+    <string name="notification_action_empty_output_desc">%1$s produced no output</string>
+    <string name="notification_action_cancelled_title">Action Cancelled</string>
+    <string name="notification_action_cancelled_desc">%1$s was cancelled</string>
+    <string name="notification_action_failed_title">Action Failed</string>
+    <string name="notification_action_failed_desc">%1$s failed</string>
 </resources>

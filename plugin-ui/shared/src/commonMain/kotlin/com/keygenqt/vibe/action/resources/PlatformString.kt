@@ -31,4 +31,14 @@ enum class PlatformString {
     SettingsStatusConfigLabel,
     // Common
     CommonRefresh,
+    // Action notifications – title and description keys
+    NotifActionCompletedTitle,
+    NotifActionCompletedDesc,
+    NotifEmptyOutputDesc,
+    NotifActionCancelledTitle,
+    NotifActionCancelledDesc,
+    NotifActionFailedTitle,
+    NotifActionFailedDesc,
+    NotifLoadErrorTitle,
+    NotifLoadErrorDesc,
 }

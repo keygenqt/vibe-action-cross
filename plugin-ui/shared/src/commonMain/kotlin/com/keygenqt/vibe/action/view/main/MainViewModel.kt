@@ -8,26 +8,41 @@ import co.touchlab.kermit.Logger
 import com.keygenqt.vibe.action.base.BaseViewModel
 import com.keygenqt.vibe.action.bridge.Environment
 import com.keygenqt.vibe.action.bridge.PlatformView
+import com.keygenqt.vibe.action.command.ActionRepository
 import com.keygenqt.vibe.action.command.CommandOutput
-import com.keygenqt.vibe.action.command.CommandProvider
 import com.keygenqt.vibe.action.models.ActionModel
-import com.keygenqt.vibe.action.models.builtInActionIds
-import kotlinx.coroutines.*
+import com.keygenqt.vibe.action.models.NotificationItem
+import com.keygenqt.vibe.action.resources.PlatformString
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.milliseconds
+import com.keygenqt.vibe.action.models.NotificationModel
 
+/**
+ * ViewModel for the main screen. Manages the list of actions, their
+ * expansion state, loading/error indicators, and action execution.
+ */
 class MainViewModel(
     env: Environment,
     view: PlatformView,
-    private val commandProvider: CommandProvider,
+    private val actionRepository: ActionRepository,
     private val logger: Logger,
 ) : BaseViewModel(env, view) {
+
+    /**
+     * Holds a one-shot notification payload to be shown by the UI.
+     * UI is responsible for calling [clearNotification] after displaying.
+     */
+    private val _notification = MutableStateFlow<NotificationModel?>(null)
+    val notification: StateFlow<NotificationModel?> = _notification.asStateFlow()
 
     /**
      * Holds the current list of actions displayed in the UI.
@@ -48,107 +63,57 @@ class MainViewModel(
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     /**
-     * Holds the last error message, or null if no error occurred.
+     * Stores the id of the action currently being executed, or null if none.
      */
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
-
-    /**
-     * Absolute path to the directory where custom action YAML files are stored.
-     */
-    private var actionsPath: String? = null
-
-    /**
-     * VM is a Koin singleton living for the whole app lifetime:
-     * the file-exists bridge is captured once — platform bridges never swap it.
-     */
-    private val fileExists: (suspend (String) -> Boolean)? = env.bridge.sys.fileExists
+    private val _runningActionId = MutableStateFlow<String?>(null)
+    val runningActionId: StateFlow<String?> = _runningActionId.asStateFlow()
 
     /**
      * Serializes loadData() calls — init and refresh() must not overlap.
      */
     private val loadMutex = Mutex()
 
+    /**
+     * Holds the Job reference for the latest data load coroutine.
+     */
+    private var loadJob: Job? = null
+
+    /**
+     * Holds the Job reference for the currently running action execution.
+     */
+    private var runJob: Job? = null
+
     init {
-        loadData(0)
+        loadData(false)
     }
 
     /**
-     * Reloads CLI status and action list. Exposed for retry/pull-to-refresh —
-     * the VM is a singleton, so [loadData] would otherwise run only once per app lifetime.
+     * Reloads the action list. Cancels any in-progress load and
+     * starts a new one with a small artificial delay.
      */
-    fun refresh() = loadData(1000L)
+    fun refresh() {
+        loadJob?.cancel()
+        loadData(true)
+    }
 
     /**
-     * Loads CLI status and action list via [CommandProvider].
+     * Loads the action list from the repository.
+     * Serialized by [loadMutex] to prevent concurrent loads.
      */
-    private fun loadData(delay: Long) {
-        viewModelScope.launch {
+    private fun loadData(showLoader: Boolean) {
+        loadJob = viewModelScope.launch {
             loadMutex.withLock {
-                _isLoading.value = true
-                _error.value = null
-                // Artificial delay to prevent rapid re-execution of loadData
-                delay(delay.milliseconds)
+                if (showLoader) {
+                    _isLoading.value = true
+                    delay(1000.milliseconds)
+                }
                 try {
-                    // Collect status output from CLI and extract actions path.
-                    // A failing status must not block the action list —
-                    // actionsPath is only needed to resolve custom actions' yaml files.
-                    val status = try {
-                        commandProvider.status()
-                            .filterIsInstance<CommandOutput.Status>()
-                            .firstOrNull()
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        logger.w(e) { "Status command failed, continuing without actionsPath" }
-                        null
-                    }
-                    actionsPath = status?.actionsPath
-
-                    // Collect action list from CLI and map to ActionModel instances.
-                    val actionOutputs = commandProvider.actions()
-                    val models = actionOutputs.filterIsInstance<CommandOutput.Actions>()
-                        .filter { it.api != null }
-                        .map { out ->
-                            val isCustom = out.name !in builtInActionIds
-                            ActionModel(
-                                id = out.name,
-                                name = out.name.replaceFirstChar { it.uppercase() },
-                                description = out.about,
-                                isCustom = isCustom,
-                                args = out.args,
-                                api = out.api!!,
-                                yamlPath = null, // resolved below for custom actions only
-                            )
-                        }
-
-                    // Resolve yaml files for custom actions (.yaml, then .yml).
-                    // Checks are fanned out in parallel: on VS Code each call is a
-                    // postMessage round-trip to the extension host.
-                    val dir = actionsPath
-                    _actions.value = if (fileExists != null && dir != null) {
-                        coroutineScope {
-                            models.map { action ->
-                                async {
-                                    val yaml = "$dir/${action.id}.yaml"
-                                    val yml = "$dir/${action.id}.yml"
-                                    val path = when {
-                                        fileExists(yaml) -> yaml
-                                        fileExists(yml) -> yml
-                                        else -> null
-                                    }
-                                    action.copy(yamlPath = path)
-                                }
-                            }.awaitAll()
-                        }
-                    } else {
-                        models
-                    }
+                    _actions.value = actionRepository.loadActions()
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    _error.value = e.message ?: "Unknown error"
                     logger.e(e) { "Load error" }
+                    _notification.value = NotificationModel.loadError(e.message ?: "Unknown error")
                 } finally {
                     _isLoading.value = false
                 }
@@ -165,28 +130,45 @@ class MainViewModel(
 
     /**
      * Runs the action with the specified id, updates the text, and pastes it back.
+     * Cancels any previously running action before starting.
      */
     fun runAction(id: String) {
+        runJob?.cancel()
+
         val action = _actions.value.find { it.id == id } ?: return
-        logger.d { "Actions: $action" }
-        viewModelScope.launch {
+        _runningActionId.value = id
+        logger.d { "Run action: $action" }
+
+        runJob = viewModelScope.launch {
             try {
-                val outputs = commandProvider.executeAction(action)
-                val newCode = outputs
-                    .filterIsInstance<CommandOutput.Success>()
-                    .firstOrNull()?.message ?: ""
-                if (newCode.isNotEmpty()) {
-                    env.bridge.sys.replaceSelectedText?.invoke(newCode)
-                } else {
-                    logger.w { "Вывод пуст, заменять нечего" }
-                }
+                actionRepository.executeAction(
+                    action = action,
+                    onSuccess = { _notification.value = NotificationModel.actionCompleted(action.name) },
+                    onEmpty = { _notification.value = NotificationModel.actionEmptyOutput(action.name) }
+                )
             } catch (e: CancellationException) {
+                _notification.value = NotificationModel.actionCancelled(action.name)
                 throw e
             } catch (e: Exception) {
-                logger.e(e) { "Failed to execute action ${action.id}" }
-                _error.value = e.message ?: "Unknown error"
+                _notification.value = NotificationModel.actionFailed(action.name)
+            } finally {
+                _runningActionId.value = null
             }
         }
+    }
+
+    /**
+     * Cancels the currently running action, if any.
+     */
+    fun cancelAction() {
+        runJob?.cancel()
+    }
+
+    /**
+     * Clears the current notification state.
+     */
+    fun clearNotification() {
+        _notification.value = null
     }
 
     /**
@@ -199,6 +181,6 @@ class MainViewModel(
             return
         }
         logger.d { "Удаление экшена: $id" }
-        // TODO: делегировать удаление в CommandProvider
+        // TODO: делегировать удаление в ActionRepository
     }
 }

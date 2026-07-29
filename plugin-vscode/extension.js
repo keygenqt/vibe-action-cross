@@ -92,13 +92,11 @@ function activate(context) {
 
   const provider = {
     resolveWebviewView(webviewView) {
-      // Allow scripts and restrict resource loading to the plugin-ui build output
       webviewView.webview.options = {
         enableScripts: true,
         localResourceRoots: [vscode.Uri.file(bundleDir)],
       }
 
-      // Load index.html and remap asset paths to secure VS Code URIs
       const file = path.join(bundleDir, 'index.html')
       const baseUri = webviewView.webview.asWebviewUri(vscode.Uri.file(bundleDir)) + '/'
       webviewView.webview.html = fs
@@ -110,59 +108,62 @@ function activate(context) {
             return `${attr}="${uri}"`
           })
 
-      // Push a themeChanged broadcast to the webview whenever the user switches VS Code's theme
       const themeListener = vscode.window.onDidChangeActiveColorTheme(() => {
         webviewView.webview.postMessage({ target: 'themeChanged' })
       })
       context.subscriptions.push(themeListener)
       webviewView.onDidDispose(() => themeListener.dispose())
 
-      // Universal bridge: routes postMessage commands to VS Code API dynamically
-      webviewView.webview.onDidReceiveMessage(async message => {
-        const { target, args, requestId } = message
-
-        if (target === 'runCli') {
-          handleRunCli(webviewView.webview, args, requestId)
-          return
-        }
-
-        if (target === 'openFile') {
-          handleOpenFile(webviewView.webview, args, requestId)
-          return
-        }
-
-        if (target === 'fileExists') {
-          const exists = fs.existsSync(args[0])
-          if (requestId != null) {
-            webviewView.webview.postMessage({ requestId, result: exists })
-          }
-          return
-        }
-
-        if (target === 'getSelectedText') {
+      const handlers = {
+        fileExists: (p) => fs.existsSync(p),
+        getClipboardText: () => vscode.env.clipboard.readText(),
+        setClipboardText: (text) => vscode.env.clipboard.writeText(text),
+        getSelectedText: () => {
           const editor = vscode.window.activeTextEditor
-          const selectedText = editor ? editor.document.getText(editor.selection) : ""
-          if (requestId != null) {
-            webviewView.webview.postMessage({ requestId, result: selectedText })
-          }
-          return
-        }
-
-        if (target === 'replaceSelectedText') {
+          return editor ? editor.document.getText(editor.selection) : ""
+        },
+        showTextDialog: async (title, text) => {
+          const safeTitle = title.toLowerCase().replace(/\s+/g, '-')
+          const uri = vscode.Uri.parse(`untitled:${safeTitle}.txt`)
+          const doc = await vscode.workspace.openTextDocument(uri)
+          const editor = await vscode.window.showTextDocument(doc)
+          await editor.edit(editBuilder => {
+            const firstLine = doc.lineAt(0)
+            const lastLine = doc.lineAt(doc.lineCount - 1)
+            const range = new vscode.Range(firstLine.range.start, lastLine.range.end)
+            editBuilder.replace(range, text)
+          })
+        },
+        replaceSelectedText: async (newText) => {
           const editor = vscode.window.activeTextEditor
-          const newText = args[0]
           if (editor && typeof newText === 'string') {
             await editor.edit(editBuilder => {
               editBuilder.replace(editor.selection, newText)
             })
           }
+        }
+      }
+
+      webviewView.webview.onDidReceiveMessage(async message => {
+        const { target, args, requestId } = message
+
+        if (target === 'runCli') return handleRunCli(webviewView.webview, args, requestId)
+        if (target === 'openFile') return handleOpenFile(webviewView.webview, args, requestId)
+
+        const handler = handlers[target]
+        if (handler) {
+          const result = await handler(...args)
+          if (requestId != null) {
+            webviewView.webview.postMessage({ requestId, result })
+          }
           return
         }
 
-        if (typeof vscode.window[target] !== 'function') return
-        const result = await vscode.window[target](...args)
-        if (requestId != null) {
-          webviewView.webview.postMessage({ requestId, result })
+        if (typeof vscode.window[target] === 'function') {
+          const result = await vscode.window[target](...args)
+          if (requestId != null) {
+            webviewView.webview.postMessage({ requestId, result })
+          }
         }
       })
     },

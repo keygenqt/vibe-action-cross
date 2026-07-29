@@ -5,6 +5,7 @@
 package com.keygenqt.vibe.action.di
 
 import com.keygenqt.vibe.action.bridge.PlatformView
+import com.keygenqt.vibe.action.command.ActionRepository
 import com.keygenqt.vibe.action.command.CommandProvider
 import com.keygenqt.vibe.action.view.about.AboutViewModel
 import com.keygenqt.vibe.action.view.history.HistoryViewModel
@@ -23,15 +24,19 @@ val appModule = module {
     // Registers CommandProvider as singleton with injected dependencies.
     single { CommandProvider(get(), get()) }
 
+    // Repositories
+    single { ActionRepository(get(), get(), get()) }
+
     // ViewModels
     single {
         MainViewModel(
             env = get(),
             view = PlatformView.Main,
-            commandProvider = get(),
+            actionRepository = get(),
             logger = get(),
         )
     }
+
     single {
         SettingsViewModel(
             env = get(),

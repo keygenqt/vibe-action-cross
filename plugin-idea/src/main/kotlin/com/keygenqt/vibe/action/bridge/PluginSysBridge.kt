@@ -17,15 +17,25 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.MessageDialogBuilder
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.ui.components.JBTextArea
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.awt.Dimension
 import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.StringSelection
 import java.io.File
+import javax.swing.JComponent
+import java.awt.event.ActionEvent
+import javax.swing.AbstractAction
+import javax.swing.Action
+import com.intellij.ui.components.JBScrollPane
+import com.keygenqt.vibe.action.resources.MessageBundle
 
 /**
  * IntelliJ plugin implementation of the system bridge.
@@ -178,6 +188,15 @@ class PluginSysBridge(val project: Project) : SysBridge {
     }
 
     /**
+     * Writes the given text to the system clipboard.
+     */
+    override val setClipboardText: ((String) -> Unit) = { newText ->
+        ApplicationManager.getApplication().invokeLater {
+            CopyPasteManager.getInstance().setContents(StringSelection(newText))
+        }
+    }
+
+    /**
      * Replaces the currently selected text in the active editor with the given newText.
      */
     override val replaceSelectedText: ((String) -> Unit) = { newText ->
@@ -190,6 +209,41 @@ class PluginSysBridge(val project: Project) : SysBridge {
                     editor.document.replaceString(start, end, newText)
                 }
             }
+        }
+    }
+
+    /**
+     * Callback that shows a multiline text dialog/output to the user.
+     */
+    override val showTextDialog: ((title: String, text: String) -> Unit) = { title, text ->
+        ApplicationManager.getApplication().invokeLater {
+            object : DialogWrapper(null) {
+                init {
+                    this.title = title
+                    init()
+                }
+
+                override fun createCenterPanel(): JComponent {
+                    val textArea = JBTextArea(text).apply {
+                        isEditable = false
+                        lineWrap = true
+                        wrapStyleWord = true
+                    }
+                    return JBScrollPane(textArea).apply {
+                        preferredSize = Dimension(620, 350)
+                    }
+                }
+
+                override fun createActions(): Array<Action> {
+                    val copyAction = object : AbstractAction(MessageBundle.message("common.copy")) {
+                        override fun actionPerformed(e: ActionEvent?) {
+                            CopyPasteManager.getInstance().setContents(StringSelection(text))
+                            close(CLOSE_EXIT_CODE)
+                        }
+                    }
+                    return arrayOf(copyAction, okAction)
+                }
+            }.show()
         }
     }
 
