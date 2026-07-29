@@ -33,7 +33,6 @@ import org.koin.compose.koinInject
 fun MainView(
     viewModel: MainViewModel = koinInject<MainViewModel>(),
     onNavigateToSettings: () -> Unit = {},
-    onNavigateToHistory: () -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
 ) {
     val env = ViewEnvironment.current
@@ -60,7 +59,6 @@ fun MainView(
         },
         actions = {
             MainHeaderActions(
-                onNavigateToHistory = onNavigateToHistory,
                 onNavigateToAbout = onNavigateToAbout,
                 onNavigateToSettings = onNavigateToSettings,
                 onRefresh = viewModel::refresh,

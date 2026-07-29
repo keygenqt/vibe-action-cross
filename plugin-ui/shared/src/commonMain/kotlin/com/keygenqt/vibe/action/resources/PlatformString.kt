@@ -17,8 +17,6 @@ enum class PlatformString {
     AboutDescription1,
     AboutDescription2,
     AboutRequirement,
-    // History screen
-    HistoryTitle,
     // Settings screen
     SettingsTitle,
     SettingsConfigDescription,

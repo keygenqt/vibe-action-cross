@@ -56,9 +56,6 @@ class PluginResBridge : ResBridge {
                 PlatformString.AboutDescription2 -> "about.description2"
                 PlatformString.AboutRequirement -> "about.requirement"
 
-                // History screen
-                PlatformString.HistoryTitle -> "history.title"
-
                 // Settings screen
                 PlatformString.SettingsTitle -> "settings.title"
                 PlatformString.SettingsOpenConfigButton -> "settings.open_config_button"

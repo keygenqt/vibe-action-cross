@@ -19,7 +19,6 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.about_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.architecture_diagram
 import vibe_action_cross.plugin_ui.resources.generated.resources.app_icon
 import vibe_action_cross.plugin_ui.resources.generated.resources.common_refresh
-import vibe_action_cross.plugin_ui.resources.generated.resources.history_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.main_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_cancelled_desc
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_cancelled_title
@@ -79,9 +78,6 @@ class ComposeResBridge : ResBridge {
             PlatformString.AboutDescription1 -> stringResource(Res.string.about_description1, *values)
             PlatformString.AboutDescription2 -> stringResource(Res.string.about_description2, *values)
             PlatformString.AboutRequirement -> stringResource(Res.string.about_requirement, *values)
-
-            // History screen
-            PlatformString.HistoryTitle -> stringResource(Res.string.history_title, *values)
 
             // Settings screen
             PlatformString.SettingsTitle -> stringResource(Res.string.settings_title, *values)

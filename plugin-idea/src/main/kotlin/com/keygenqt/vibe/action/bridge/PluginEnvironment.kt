@@ -6,8 +6,6 @@ package com.keygenqt.vibe.action.bridge
 
 import com.intellij.openapi.project.Project
 import com.keygenqt.vibe.action.bridge.view.PluginAboutViewBridge
-import com.keygenqt.vibe.action.bridge.view.PluginHistoryDetailViewBridge
-import com.keygenqt.vibe.action.bridge.view.PluginHistoryViewBridge
 import com.keygenqt.vibe.action.bridge.view.PluginMainViewBridge
 import com.keygenqt.vibe.action.bridge.view.PluginSettingsViewBridge
 
@@ -35,8 +33,6 @@ data class PluginEnvironment(
         vws = hashMapOf(
             PlatformView.Main to PluginMainViewBridge(),
             PlatformView.Settings to PluginSettingsViewBridge(),
-            PlatformView.History to PluginHistoryViewBridge(),
-            PlatformView.HistoryDetail to PluginHistoryDetailViewBridge(),
             PlatformView.About to PluginAboutViewBridge(),
         ),
     ),

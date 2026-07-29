@@ -21,7 +21,6 @@ import com.keygenqt.vibe.action.resources.PlatformString
  */
 @Composable
 fun MainHeaderActions(
-    onNavigateToHistory: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onRefresh: () -> Unit,
@@ -47,18 +46,6 @@ fun MainHeaderActions(
                 modifier = Modifier.size(16.dp),
             )
         }
-    }
-
-    IconButton(
-        onClick = onNavigateToHistory,
-        modifier = Modifier.size(24.dp),
-        enabled = !isRefreshing,
-    ) {
-        Icon(
-            imageVector = Icons.Default.History,
-            contentDescription = env.bridge.res.string(PlatformString.HistoryTitle),
-            modifier = Modifier.size(16.dp),
-        )
     }
 
     IconButton(

@@ -10,8 +10,6 @@ package com.keygenqt.vibe.action.bridge
 enum class PlatformView {
     Main,
     Settings,
-    History,
-    HistoryDetail,
     About,
 }
 
