@@ -5,6 +5,7 @@
 package com.keygenqt.vibe.action.command
 
 import co.touchlab.kermit.Logger
+import com.keygenqt.vibe.action.bridge.CliProcess
 import com.keygenqt.vibe.action.bridge.Environment
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -36,17 +37,14 @@ class CommandProvider(
     suspend fun actions(): List<CommandOutput> = execute(listOf())
 
     /**
-     * Executes 'stop' command to terminate running CLI processes.
-     */
-    suspend fun stop(): List<CommandOutput> = execute(listOf("stop"))
-
-    /**
-     * General command execution, suspending until CLI process finishes.
+     * General command execution, suspending until the CLI process finishes.
      *
-     * Cancellation is handled via coroutine cancellation. If a newer command
-     * is started by the ViewModel (which cancels the previous Job), the
-     * continuation becomes inactive, and the result of the lingering process
-     * is safely discarded.
+     * Cancellation kills the underlying OS process via the [CliProcess]
+     * handle; the bridge drops all late events from it afterward.
+     *
+     * Exit code [EXIT_SUPERSEDED] (process shut down because a newer CLI
+     * instance took over) is mapped to [CancellationException] so the UI
+     * reports "canceled" rather than "failed".
      */
     suspend fun execute(args: List<String>): List<CommandOutput> {
         try {
@@ -54,16 +52,23 @@ class CommandProvider(
                 suspendCancellableCoroutine { cont ->
                     val result = mutableListOf<CommandOutput>()
                     try {
-                        runCli(
+                        val process = runCli(
                             args,
-                            { line -> result.add(parseCommandOutputLine(line)) },
+                            { line ->
+                                // Late events may race with cancellation — drop them.
+                                if (cont.isActive) result.add(parseCommandOutputLine(line))
+                            },
                             { exitCode ->
-                                if (exitCode == 0) {
-                                    // Check isActive to avoid resuming a cancelled continuation
-                                    if (cont.isActive) cont.resume(result.toList())
-                                } else {
-                                    if (cont.isActive) {
-                                        cont.resumeWithException(
+                                if (cont.isActive) {
+                                    when (exitCode) {
+                                        0 -> cont.resume(result.toList())
+                                        EXIT_SUPERSEDED -> cont.resumeWithException(
+                                            CancellationException(
+                                                "Command ${args.ifEmpty { listOf("default") }.joinToString(" ")} " +
+                                                    "was superseded by a newer CLI process",
+                                            ),
+                                        )
+                                        else -> cont.resumeWithException(
                                             RuntimeException(
                                                 "Command ${args.ifEmpty { listOf("default") }.joinToString(" ")} " +
                                                     "failed with exit code $exitCode",
@@ -73,6 +78,9 @@ class CommandProvider(
                                 }
                             },
                         )
+                        // Registered after runCli returns; if the coroutine was
+                        // already canceled, the handler fires immediately.
+                        cont.invokeOnCancellation { runCatching { process.cancel() } }
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
@@ -85,9 +93,8 @@ class CommandProvider(
                 }
             }
         } catch (e: TimeoutCancellationException) {
-            // Coroutine is canceled here; the lingering CLI process is cleaned up
-            // on the Rust side — the next CLI launch terminates the previous one
-            // via the PID-file mechanism, so stale processes don't accumulate.
+            // invokeOnCancellation above has already killed the process —
+            // no lingering CLI is left behind.
             throw RuntimeException(
                 "Command ${args.ifEmpty { listOf("default") }.joinToString(" ")} " +
                     "timed out after ${CLI_TIMEOUT}s",
@@ -102,11 +109,9 @@ class CommandProvider(
      * to decide between typed (Status/Actions) and untyped (Fallback) decoding.
      */
     private fun parseCommandOutputLine(line: String): CommandOutput {
-        // First-pass parse – if the line is not a valid JSON object, treat as Unknown
         val obj = runCatching { commandJson.parseToJsonElement(line).jsonObject }.getOrNull()
             ?: return CommandOutput.Unknown
 
-        // Discriminator lives *inside* the "value" key: {"level":"info","value":{"export":"status",...}}
         val hasDiscriminator = (obj["value"] as? JsonObject)?.containsKey(API_DISCRIMINATOR) == true
 
         if (hasDiscriminator) {
@@ -114,7 +119,6 @@ class CommandProvider(
                 .onFailure { logger.w(it) { "Discriminator present but decode failed: $line" } }
         }
 
-        // Fallback for logs, usage text, or any other non-discriminated output
         return runCatching { commandJson.decodeFromJsonElement(CommandOutput.Fallback.serializer(), obj) }
             .getOrElse {
                 logger.w(it) { "Failed to parse line: $line" }
@@ -124,5 +128,12 @@ class CommandProvider(
 
     private companion object {
         val CLI_TIMEOUT = 30.seconds
+
+        /**
+         * Exit code used by vibe-action's RunGuard when a newer instance
+         * takes over and this process shuts itself down.
+         * Must match EXIT_SUPERSEDED in run_guard.rs.
+         */
+        const val EXIT_SUPERSEDED = 130
     }
 }

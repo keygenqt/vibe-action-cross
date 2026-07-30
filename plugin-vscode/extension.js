@@ -10,15 +10,26 @@ const { spawn } = require('child_process')
 const cliPath = process.env.VIBE_ACTION_CLI_PATH || 'vibe-action'
 
 /**
+ * Live CLI child processes keyed by invocation id (passed from Kotlin).
+ * Enables killCli to target a specific process; entries are removed on exit.
+ */
+const cliProcesses = new Map()
+
+/**
  * Handles runCli command: spawns vibe-action process and streams NDJSON output.
  * All stdout lines are forwarded as-is — the Kotlin side decides what is valid JSON.
+ * procId registers the process for killCli; concurrent invocations are independent.
  */
 function handleRunCli(webview, args, requestId) {
-  const [cmdArgs, eventTarget, doneTarget] = args
+  const [cmdArgs, eventTarget, doneTarget, procId] = args
 
   const proc = spawn(cliPath, cmdArgs || [], {
     env: { ...process.env, VIBE_LOG_TYPE: 'json' }
   })
+
+  if (procId != null) {
+    cliProcesses.set(procId, proc)
+  }
 
   // Guard against double onDone: Node fires both 'error' and 'close'
   // when spawn fails (e.g. ENOENT — CLI not found in PATH).
@@ -26,6 +37,7 @@ function handleRunCli(webview, args, requestId) {
   const done = code => {
     if (finished) return
     finished = true
+    if (procId != null) cliProcesses.delete(procId)
     webview.postMessage({ target: doneTarget, args: [code] })
   }
 
@@ -60,6 +72,20 @@ function handleRunCli(webview, args, requestId) {
 
   if (requestId != null) {
     webview.postMessage({ requestId, result: true })
+  }
+}
+
+/**
+ * Handles killCli: terminates a previously spawned CLI process by id.
+ * No-op if the process already exited — the webview has already dropped its
+ * callback slot by then, so the resulting late cliDone is ignored there.
+ */
+function handleKillCli(args) {
+  const [procId] = args || []
+  const proc = cliProcesses.get(procId)
+  if (proc) {
+    cliProcesses.delete(procId)
+    proc.kill()
   }
 }
 
@@ -108,7 +134,11 @@ function activate(context) {
         webviewView.webview.postMessage({ target: 'themeChanged' })
       })
       context.subscriptions.push(themeListener)
-      webviewView.onDidDispose(() => themeListener.dispose())
+      webviewView.onDidDispose(() => {
+        themeListener.dispose()
+        for (const proc of cliProcesses.values()) proc.kill()
+        cliProcesses.clear()
+      })
 
       const handlers = {
         fileExists: (p) => fs.existsSync(p),
@@ -144,6 +174,7 @@ function activate(context) {
         const { target, args, requestId } = message
 
         if (target === 'runCli') return handleRunCli(webviewView.webview, args, requestId)
+        if (target === 'killCli') return handleKillCli(args)
         if (target === 'openFile') return handleOpenFile(webviewView.webview, args, requestId)
 
         const handler = handlers[target]

@@ -13,9 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.keygenqt.vibe.action.bridge.ViewEnvironment
+import com.keygenqt.vibe.action.components.LoadingLottieAnimation
 import com.keygenqt.vibe.action.components.NotificationHandler
 import com.keygenqt.vibe.action.components.ScreenScaffold
-import com.keygenqt.vibe.action.components.LoadingLottieAnimation
 import com.keygenqt.vibe.action.resources.PlatformString
 import com.keygenqt.vibe.action.view.settings.components.CacheSection
 import com.keygenqt.vibe.action.view.settings.components.ConfigSection

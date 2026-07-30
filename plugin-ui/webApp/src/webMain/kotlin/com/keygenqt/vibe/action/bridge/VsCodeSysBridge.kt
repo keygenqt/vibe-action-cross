@@ -19,21 +19,29 @@ import kotlin.time.Duration.Companion.seconds
 class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
 
     /**
-     * Single-slot callbacks for the currently running CLI process.
-     * The extension host supports concurrent processes (targets are passed per call),
-     * but this bridge does not: a second runCli would silently overwrite the first
-     * call's callbacks, leaving its coroutine hanging. Guarded below.
+     * Callbacks of live CLI invocations, keyed by invocation id.
+     * Each runCli call gets a unique id; the extension host tags events with
+     * per-invocation targets ("cliEvent:<id>"/"cliDone:<id>"), so events of
+     * a superseded process can never reach a newer invocation's callbacks.
      */
-    private var cliEventCallback: ((String) -> Unit)? = null
-    private var cliDoneCallback: ((Int) -> Unit)? = null
+    private val cliCallbacks = mutableMapOf<String, Pair<(String) -> Unit, (Int) -> Unit>>()
+    private var cliSeq = 0
 
     init {
-        // Listen for CLI events from extension host
+        // Route CLI events from the extension host to the owning invocation.
         window.addEventListener("message", { event ->
             val data = event.asDynamic().data
-            when (data?.target) {
-                "cliEvent" -> cliEventCallback?.invoke(data.args[0] as String)
-                "cliDone" -> cliDoneCallback?.invoke(data.args[0] as Int)
+            val target = data?.target as? String ?: return@addEventListener
+            when {
+                target.startsWith(CLI_EVENT_TARGET) ->
+                    cliCallbacks[target.removePrefix(CLI_EVENT_TARGET)]
+                        ?.first?.invoke(data.args[0] as String)
+
+                target.startsWith(CLI_DONE_TARGET) -> {
+                    val id = target.removePrefix(CLI_DONE_TARGET)
+                    // Remove before notifying — the slot is freed even if onDone throws.
+                    cliCallbacks.remove(id)?.second?.invoke(data.args[0] as Int)
+                }
             }
         })
     }
@@ -80,22 +88,29 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
 
     /**
      * Runs vibe-action CLI via extension host child_process.spawn.
-     * Events stream back through postMessage with targets "cliEvent"/"cliDone".
+     * Events stream back through postMessage with per-invocation targets
+     * ("cliEvent:<id>"/"cliDone:<id>"), so concurrent calls never cross-talk.
      *
-     * Throws [IllegalStateException] if another CLI process is already running —
-     * concurrent calls are not supported (callbacks would be overwritten).
+     * [CliProcess.cancel] drops the callback slot and asks the extension host
+     * to kill the child process ("killCli"); the resulting late "cliDone:<id>"
+     * finds no slot and is ignored.
      */
-    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> Unit) =
+    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> CliProcess) =
         { args, onEvent, onDone ->
-            check(cliDoneCallback == null) { "Concurrent runCli is not supported by VsCodeSysBridge" }
-            cliEventCallback = onEvent
-            cliDoneCallback = { code ->
-                // Clear slots before notifying — the bridge is reusable immediately after.
-                cliEventCallback = null
-                cliDoneCallback = null
-                onDone(code)
+            val id = (cliSeq++).toString()
+            cliCallbacks[id] = onEvent to onDone
+            api.send(
+                "runCli",
+                arrayOf(args.toTypedArray(), "$CLI_EVENT_TARGET$id", "$CLI_DONE_TARGET$id", id),
+            )
+            object : CliProcess {
+                override fun cancel() {
+                    // Drop the slot first — the late cliDone is then ignored.
+                    if (cliCallbacks.remove(id) != null) {
+                        api.send("killCli", arrayOf(id))
+                    }
+                }
             }
-            api.send("runCli", arrayOf(args.toTypedArray(), "cliEvent", "cliDone"))
         }
 
     /**
@@ -168,6 +183,9 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     }
 
     private companion object {
+        const val CLI_EVENT_TARGET = "cliEvent:"
+        const val CLI_DONE_TARGET = "cliDone:"
+
         val FILE_EXISTS_TIMEOUT = 5.seconds
         val EMPTY_ARGS: Array<Any?> = emptyArray()
     }

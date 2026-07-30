@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -36,6 +37,15 @@ class MainViewModel(
     private val eventBus: EventBus,
     private val logger: Logger,
 ) : BaseViewModel(env, view) {
+
+    /**
+     * Monotonic sequence of runAction invocations. Guards late continuations
+     * of a superseded run: unlike _runningActionId, it also distinguishes a
+     * restart of the *same* action (A canceled → A started again), where the
+     * id matches but the old job must stay silent.
+     * Mutated only on the viewModelScope dispatcher (Main).
+     */
+    private var runSeq = 0
 
     /**
      * Holds a one-shot notification payload to be shown by the UI.
@@ -150,11 +160,19 @@ class MainViewModel(
     /**
      * Runs the action with the specified id, updates the text, and pastes it back.
      * Cancels any previously running action before starting.
+     *
+     * Cancellation kills the previous CLI process via the CliProcess handle
+     * (see CommandProvider.execute) — no 'stop' command is needed; the new
+     * process's Rust RunGuard backstops the shutdown.
      */
     fun runAction(id: String) {
-        runJob?.cancel()
-
         val action = _actions.value.find { it.id == id } ?: return
+
+        // Supersede the previous run. Its catch/finally below are guarded by
+        // runSeq, so they won't clobber this run's state or notifications.
+        runJob?.cancel()
+        val seq = ++runSeq
+
         _runningActionId.value = id
         logger.d { "Run action: $action" }
 
@@ -162,22 +180,39 @@ class MainViewModel(
             try {
                 actionRepository.executeAction(
                     action = action,
-                    onSuccess = { _notification.value = NotificationModel.actionCompleted(action.name) },
-                    onEmpty = { _notification.value = NotificationModel.actionEmptyOutput(action.name) },
+                    // isActive: a canceled job can still reach these in the
+                    // non-suspending tail of executeAction after cancellation.
+                    onSuccess = { if (isActive) _notification.value = NotificationModel.actionCompleted(action.name) },
+                    onEmpty = { if (isActive) _notification.value = NotificationModel.actionEmptyOutput(action.name) },
                 )
             } catch (e: CancellationException) {
-                _notification.value = NotificationModel.actionCancelled(action.name)
+                // Silent when superseded — the newer run owns the UI now.
+                if (runSeq == seq) {
+                    _notification.value = NotificationModel.actionCancelled(action.name)
+                }
                 throw e
             } catch (e: Exception) {
-                _notification.value = NotificationModel.actionFailed(action.name)
+                if (runSeq == seq) {
+                    _notification.value = NotificationModel.actionFailed(action.name)
+                } else {
+                    logger.w(e) { "Superseded action ${action.name} failed" }
+                }
             } finally {
-                _runningActionId.value = null
+                // A newer run may already have claimed the slot — don't clear it.
+                // (The original `= null` wiped the NEW action's running state
+                // when the old job unwound after the new one had started.)
+                if (runSeq == seq) {
+                    _runningActionId.value = null
+                }
             }
         }
     }
 
     /**
      * Cancels the currently running action, if any.
+     * The coroutine unwinds → invokeOnCancellation kills the CLI process
+     * via CliProcess.cancel, and the "canceled" notification is posted
+     * from runAction's catch (runSeq is unchanged here, so the guard passes).
      */
     fun cancelAction() {
         runJob?.cancel()

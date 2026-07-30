@@ -12,8 +12,8 @@ import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.ide.CopyPasteManager
@@ -26,16 +26,16 @@ import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
+import com.keygenqt.vibe.action.CliProcessService
 import com.keygenqt.vibe.action.resources.MessageBundle
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.awt.Dimension
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionEvent
 import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.AbstractAction
 import javax.swing.Action
 import javax.swing.JComponent
@@ -46,9 +46,10 @@ import javax.swing.JComponent
  */
 class PluginSysBridge(val project: Project) : SysBridge {
 
-    /** Guards against concurrent runCli calls — only one CLI process at a time. */
-    @Volatile
-    private var cliBusy = false
+    /**
+     * Service for managing CLI process lifecycle and communication within the project.
+     */
+    private val cliProcesses = project.service<CliProcessService>()
 
     /**
      * Path to vibe-action CLI binary. Uses VIBE_ACTION_CLI_PATH env var for debug builds,
@@ -87,23 +88,32 @@ class PluginSysBridge(val project: Project) : SysBridge {
 
     /**
      * Runs vibe-action CLI process, streams NDJSON stdout lines to onEvent.
-     * Uses login shell to inherit full PATH on Unix (macOS GUI apps get stripped PATH).
+     * Uses login shell to inherit full PATH on Unix (macOS GUI apps get stripped
+     * PATH); `exec` replaces the shell with the CLI so destroyProcess() kills
+     * the CLI itself, not an orphaned shell wrapper.
      *
-     * Only one CLI process may run at a time (same contract as VsCodeSysBridge):
-     * a concurrent call throws [IllegalStateException]. Lines are buffered and
-     * emitted only when complete — the platform delivers stdout in arbitrary
-     * chunks, so a JSON line may be split across events. The trailing line
-     * without '\n' is flushed on process termination.
+     * Concurrent calls are supported: every invocation owns its process, buffer
+     * and event stream — there is no shared slot. Sequencing of *actions* is
+     * handled outside the bridge: the ViewModel cancels the previous coroutine
+     * (which cancels the returned [CliProcess]), and the Rust RunGuard kills
+     * the previous action when a new one starts. This matters for guard-free
+     * commands like `status`, which may run alongside an action.
+     *
+     * Lines are buffered and emitted only when complete — the platform delivers
+     * stdout in arbitrary chunks, so a JSON line may be split across events.
+     * The trailing line without '\n' is flushed on process termination.
+     *
+     * After [CliProcess.cancel] no further callbacks are delivered: finished
+     * is the fence (a callback racing on the reader thread may still slip
+     * through — CommandProvider guards those with isActive).
      */
-    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> Unit) =
+    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> CliProcess) =
         { args, onEvent, onDone ->
-            check(!cliBusy) { "Concurrent runCli is not supported by PluginSysBridge" }
-            cliBusy = true
-
             val commandLine = if (SystemInfo.isUnix) {
                 val shell = System.getenv("SHELL")?.takeIf { it.isNotBlank() } ?: "/bin/sh"
                 val cmd = buildString {
-                    append("VIBE_LOG_TYPE=json ")
+                    // exec replaces the shell process with the CLI
+                    append("exec ")
                     append(cliPath.shellEscape())
                     args.forEach {
                         append(' ')
@@ -111,25 +121,28 @@ class PluginSysBridge(val project: Project) : SysBridge {
                     }
                 }
                 GeneralCommandLine(shell, "-lc", cmd)
+                    .withEnvironment("VIBE_LOG_TYPE", "json")
             } else {
                 GeneralCommandLine(cliPath).withParameters(args)
                     .withEnvironment("VIBE_LOG_TYPE", "json")
             }.withCharset(Charsets.UTF_8)
 
-            // Local per invocation — parallel runCli calls must not share the buffer.
-            // Listener events are dispatched sequentially on the process reader thread,
-            // so no synchronization is needed here.
+            val handler = OSProcessHandler(commandLine)
+            cliProcesses.track(handler)
+
+            // Flipped exactly once — by whichever finishes first:
+            // processTerminated (natural exit: callbacks fire) or
+            // CliProcess.cancel (destroy: callbacks are suppressed).
+            val finished = AtomicBoolean(false)
+
+            // Local per invocation. Listener events are dispatched sequentially
+            // on the process reader thread, so the buffer needs no synchronization.
             val stdoutBuffer = StringBuilder()
 
-            val handler = try {
-                OSProcessHandler(commandLine)
-            } catch (e: Exception) {
-                cliBusy = false
-                throw e
-            }
             handler.addProcessListener(object : ProcessListener {
                 override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                     if (outputType != ProcessOutputTypes.STDOUT) return
+                    if (finished.get()) return
                     stdoutBuffer.append(event.text)
                     var idx = stdoutBuffer.indexOf('\n')
                     while (idx >= 0) {
@@ -141,14 +154,23 @@ class PluginSysBridge(val project: Project) : SysBridge {
                 }
 
                 override fun processTerminated(event: ProcessEvent) {
+                    cliProcesses.untrack(handler)
+                    // Canceled — the caller explicitly asked for silence.
+                    if (!finished.compareAndSet(false, true)) return
                     val tail = stdoutBuffer.toString().trim()
                     if (tail.isNotEmpty()) onEvent(tail)
-                    // Release the slot before notifying — the bridge is reusable immediately after.
-                    cliBusy = false
                     onDone(event.exitCode)
                 }
             })
             handler.startNotify()
+
+            object : CliProcess {
+                override fun cancel() {
+                    if (finished.compareAndSet(false, true)) {
+                        handler.destroyProcess()
+                    }
+                }
+            }
         }
 
     /**
@@ -157,10 +179,12 @@ class PluginSysBridge(val project: Project) : SysBridge {
      * in which case the cached [LocalFileSystem.findFileByPath] would return null.
      */
     override val openFile: ((path: String) -> Unit) = { path ->
-        CoroutineScope(Dispatchers.EDT).launch {
+        ApplicationManager.getApplication().executeOnPooledThread {
             val file = LocalFileSystem.getInstance().refreshAndFindFileByPath(path)
             if (file != null) {
-                FileEditorManager.getInstance(project).openFile(file, true)
+                ApplicationManager.getApplication().invokeLater {
+                    FileEditorManager.getInstance(project).openFile(file, true)
+                }
             }
         }
     }
@@ -224,7 +248,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
      */
     override val showTextDialog: ((title: String, text: String) -> Unit) = { title, text ->
         ApplicationManager.getApplication().invokeLater {
-            object : DialogWrapper(null) {
+            object : DialogWrapper(project) {
                 init {
                     this.title = title
                     init()

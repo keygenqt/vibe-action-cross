@@ -5,6 +5,21 @@
 package com.keygenqt.vibe.action.bridge
 
 /**
+ * Handle to a CLI process started via [SysBridge.runCli].
+ */
+interface CliProcess {
+    /**
+     * Requests termination of the process. Idempotent and non-blocking.
+     *
+     * After this call the bridge drops all further events for this
+     * invocation: neither onEvent nor onDone will be delivered (events
+     * already racing on another thread may slip through — callers must
+     * tolerate that, see CommandProvider's isActive guards).
+     */
+    fun cancel()
+}
+
+/**
  * Low-level operational core bridge mapping to host OS and IDE hooks.
  * Provides platform-agnostic access to notifications and modal dialogs.
  */
@@ -29,8 +44,19 @@ interface SysBridge {
     /**
      * Runs vibe-action CLI with given arguments.
      * Streams NDJSON lines to onEvent, exit code to onDone.
+     *
+     * Concurrent calls ARE supported: every invocation owns an independent
+     * event stream — events of an older process are never delivered to a
+     * newer invocation's callbacks. Starting a new process supersedes the
+     * previous one (the Rust RunGuard terminates it; the bridge may also
+     * destroy it directly).
+     *
+     * Returns a [CliProcess] handle for terminating the process.
+     * Unless cancel() is called, onDone is invoked exactly once when the
+     * process exits. A process terminated because a newer CLI instance
+     * superseded it exits with code 130 (see RunGuard::EXIT_SUPERSEDED).
      */
-    val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> Unit)?
+    val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> CliProcess)?
 
     /**
      * Opens a file in the platform's native editor/viewer.
