@@ -117,7 +117,7 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
                 suspendCancellableCoroutine { cont ->
                     api.send(
                         target = "fileExists",
-                        args = arrayOf(path)
+                        args = arrayOf(path),
                     ) { result -> cont.resume(result as? Boolean ?: false) }
                 }
             }

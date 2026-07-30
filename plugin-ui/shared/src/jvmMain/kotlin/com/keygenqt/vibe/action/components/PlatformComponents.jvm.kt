@@ -16,9 +16,14 @@ actual object PlatformComponents {
     actual fun Button(
         onClick: () -> Unit,
         modifier: Modifier,
+        enabled: Boolean,
         content: @Composable () -> Unit,
     ): (@Composable () -> Unit)? = {
-        JButton(onClick = onClick, modifier = modifier) {
+        JButton(
+            onClick = onClick,
+            modifier = modifier,
+            enabled = enabled,
+        ) {
             content()
         }
     }

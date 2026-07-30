@@ -12,6 +12,7 @@ import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -23,19 +24,21 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
+import com.keygenqt.vibe.action.resources.MessageBundle
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.awt.Dimension
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.StringSelection
-import java.io.File
-import javax.swing.JComponent
 import java.awt.event.ActionEvent
+import java.io.File
 import javax.swing.AbstractAction
 import javax.swing.Action
-import com.intellij.ui.components.JBScrollPane
-import com.keygenqt.vibe.action.resources.MessageBundle
+import javax.swing.JComponent
 
 /**
  * IntelliJ plugin implementation of the system bridge.
@@ -102,7 +105,10 @@ class PluginSysBridge(val project: Project) : SysBridge {
                 val cmd = buildString {
                     append("VIBE_LOG_TYPE=json ")
                     append(cliPath.shellEscape())
-                    args.forEach { append(' '); append(it.shellEscape()) }
+                    args.forEach {
+                        append(' ')
+                        append(it.shellEscape())
+                    }
                 }
                 GeneralCommandLine(shell, "-lc", cmd)
             } else {
@@ -151,9 +157,11 @@ class PluginSysBridge(val project: Project) : SysBridge {
      * in which case the cached [LocalFileSystem.findFileByPath] would return null.
      */
     override val openFile: ((path: String) -> Unit) = { path ->
-        val file = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(path))
-        if (file != null) {
-            FileEditorManager.getInstance(project).openFile(file, true)
+        CoroutineScope(Dispatchers.EDT).launch {
+            val file = LocalFileSystem.getInstance().refreshAndFindFileByPath(path)
+            if (file != null) {
+                FileEditorManager.getInstance(project).openFile(file, true)
+            }
         }
     }
 
@@ -174,7 +182,6 @@ class PluginSysBridge(val project: Project) : SysBridge {
             onResult(text)
         }
     }
-
 
     /**
      * Retrieves the current text from the system clipboard.
@@ -250,9 +257,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
     /**
      * Returns the currently selected text editor from FileEditorManager, or null if none.
      */
-    private fun getActiveEditor(): Editor? {
-        return FileEditorManager.getInstance(project).selectedTextEditor
-    }
+    private fun getActiveEditor(): Editor? = FileEditorManager.getInstance(project).selectedTextEditor
 }
 
 /**

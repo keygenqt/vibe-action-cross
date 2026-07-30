@@ -16,8 +16,8 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.about_descripti
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_description2
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_requirement
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_title
-import vibe_action_cross.plugin_ui.resources.generated.resources.architecture_diagram
 import vibe_action_cross.plugin_ui.resources.generated.resources.app_icon
+import vibe_action_cross.plugin_ui.resources.generated.resources.architecture_diagram
 import vibe_action_cross.plugin_ui.resources.generated.resources.common_refresh
 import vibe_action_cross.plugin_ui.resources.generated.resources.main_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_cancelled_desc
@@ -27,6 +27,10 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.notification_ac
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_empty_output_desc
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_failed_desc
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_failed_title
+import vibe_action_cross.plugin_ui.resources.generated.resources.notification_cache_clean_failed_desc
+import vibe_action_cross.plugin_ui.resources.generated.resources.notification_cache_clean_failed_title
+import vibe_action_cross.plugin_ui.resources.generated.resources.notification_cache_cleaned_desc
+import vibe_action_cross.plugin_ui.resources.generated.resources.notification_cache_cleaned_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_load_error_desc
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_load_error_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_cache_description
@@ -96,7 +100,6 @@ class ComposeResBridge : ResBridge {
             // Action notifications
             PlatformString.NotifLoadErrorTitle -> stringResource(Res.string.notification_load_error_title, *values)
             PlatformString.NotifLoadErrorDesc -> stringResource(Res.string.notification_load_error_desc, *values)
-
             PlatformString.NotifActionCompletedTitle -> stringResource(Res.string.notification_action_completed_title, *values)
             PlatformString.NotifActionCompletedDesc -> stringResource(Res.string.notification_action_completed_desc, *values)
             PlatformString.NotifEmptyOutputDesc -> stringResource(Res.string.notification_action_empty_output_desc, *values)
@@ -104,6 +107,12 @@ class ComposeResBridge : ResBridge {
             PlatformString.NotifActionCancelledDesc -> stringResource(Res.string.notification_action_cancelled_desc, *values)
             PlatformString.NotifActionFailedTitle -> stringResource(Res.string.notification_action_failed_title, *values)
             PlatformString.NotifActionFailedDesc -> stringResource(Res.string.notification_action_failed_desc, *values)
+
+            // Cache Notifications
+            PlatformString.NotifCacheCleanedTitle -> stringResource(Res.string.notification_cache_cleaned_title, *values)
+            PlatformString.NotifCacheCleanedDesc -> stringResource(Res.string.notification_cache_cleaned_desc, *values)
+            PlatformString.NotifCacheCleanFailedTitle -> stringResource(Res.string.notification_cache_clean_failed_title, *values)
+            PlatformString.NotifCacheCleanFailedDesc -> stringResource(Res.string.notification_cache_clean_failed_desc, *values)
         }
     }
 }

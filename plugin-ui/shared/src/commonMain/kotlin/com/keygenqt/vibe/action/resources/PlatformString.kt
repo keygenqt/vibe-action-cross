@@ -10,13 +10,16 @@ package com.keygenqt.vibe.action.resources
 enum class PlatformString {
     // Root Actions screen — tool window stripe label
     SidebarTitle,
+
     // Actions screen
     MainTitle,
+
     // About screen
     AboutTitle,
     AboutDescription1,
     AboutDescription2,
     AboutRequirement,
+
     // Settings screen
     SettingsTitle,
     SettingsConfigDescription,
@@ -27,8 +30,10 @@ enum class PlatformString {
     SettingsStatusActionsLabel,
     SettingsStatusVersionLabel,
     SettingsStatusConfigLabel,
+
     // Common
     CommonRefresh,
+
     // Action notifications – title and description keys
     NotifActionCompletedTitle,
     NotifActionCompletedDesc,
@@ -39,4 +44,10 @@ enum class PlatformString {
     NotifActionFailedDesc,
     NotifLoadErrorTitle,
     NotifLoadErrorDesc,
+
+    // Cache notifications – title and description keys
+    NotifCacheCleanedTitle,
+    NotifCacheCleanedDesc,
+    NotifCacheCleanFailedTitle,
+    NotifCacheCleanFailedDesc,
 }

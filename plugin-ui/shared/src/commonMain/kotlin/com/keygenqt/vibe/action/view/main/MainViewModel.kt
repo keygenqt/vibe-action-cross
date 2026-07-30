@@ -5,14 +5,14 @@
 package com.keygenqt.vibe.action.view.main
 
 import co.touchlab.kermit.Logger
+import com.keygenqt.vibe.action.base.AppEvent
 import com.keygenqt.vibe.action.base.BaseViewModel
+import com.keygenqt.vibe.action.base.EventBus
 import com.keygenqt.vibe.action.bridge.Environment
 import com.keygenqt.vibe.action.bridge.PlatformView
 import com.keygenqt.vibe.action.command.ActionRepository
-import com.keygenqt.vibe.action.command.CommandOutput
 import com.keygenqt.vibe.action.models.ActionModel
-import com.keygenqt.vibe.action.models.NotificationItem
-import com.keygenqt.vibe.action.resources.PlatformString
+import com.keygenqt.vibe.action.models.NotificationModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.milliseconds
-import com.keygenqt.vibe.action.models.NotificationModel
 
 /**
  * ViewModel for the main screen. Manages the list of actions, their
@@ -34,6 +33,7 @@ class MainViewModel(
     env: Environment,
     view: PlatformView,
     private val actionRepository: ActionRepository,
+    private val eventBus: EventBus,
     private val logger: Logger,
 ) : BaseViewModel(env, view) {
 
@@ -85,6 +85,7 @@ class MainViewModel(
 
     init {
         loadData(false)
+        listenToEvents()
     }
 
     /**
@@ -94,6 +95,24 @@ class MainViewModel(
     fun refresh() {
         loadJob?.cancel()
         loadData(true)
+    }
+
+    /**
+     * Listens for global application events from the EventBus.
+     * Used to react to cross-ViewModel signals, such as refreshing the
+     * action list when the cache is cleared in the Settings screen.
+     */
+    private fun listenToEvents() {
+        viewModelScope.launch {
+            eventBus.events.collect { event ->
+                when (event) {
+                    AppEvent.CacheCleared -> {
+                        logger.d { "Cache cleared event received, refreshing actions." }
+                        refresh()
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -144,7 +163,7 @@ class MainViewModel(
                 actionRepository.executeAction(
                     action = action,
                     onSuccess = { _notification.value = NotificationModel.actionCompleted(action.name) },
-                    onEmpty = { _notification.value = NotificationModel.actionEmptyOutput(action.name) }
+                    onEmpty = { _notification.value = NotificationModel.actionEmptyOutput(action.name) },
                 )
             } catch (e: CancellationException) {
                 _notification.value = NotificationModel.actionCancelled(action.name)

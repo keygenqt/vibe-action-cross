@@ -36,6 +36,11 @@ class CommandProvider(
     suspend fun actions(): List<CommandOutput> = execute(listOf())
 
     /**
+     * Executes 'stop' command to terminate running CLI processes.
+     */
+    suspend fun stop(): List<CommandOutput> = execute(listOf("stop"))
+
+    /**
      * General command execution, suspending until CLI process finishes.
      *
      * Cancellation is handled via coroutine cancellation. If a newer command
@@ -57,14 +62,16 @@ class CommandProvider(
                                     // Check isActive to avoid resuming a cancelled continuation
                                     if (cont.isActive) cont.resume(result.toList())
                                 } else {
-                                    if (cont.isActive) cont.resumeWithException(
-                                        RuntimeException(
-                                            "Command ${args.ifEmpty { listOf("default") }.joinToString(" ")} " +
-                                                    "failed with exit code $exitCode"
+                                    if (cont.isActive) {
+                                        cont.resumeWithException(
+                                            RuntimeException(
+                                                "Command ${args.ifEmpty { listOf("default") }.joinToString(" ")} " +
+                                                    "failed with exit code $exitCode",
+                                            ),
                                         )
-                                    )
+                                    }
                                 }
-                            }
+                            },
                         )
                     } catch (e: CancellationException) {
                         throw e
@@ -83,7 +90,8 @@ class CommandProvider(
             // via the PID-file mechanism, so stale processes don't accumulate.
             throw RuntimeException(
                 "Command ${args.ifEmpty { listOf("default") }.joinToString(" ")} " +
-                        "timed out after ${CLI_TIMEOUT}s", e
+                    "timed out after ${CLI_TIMEOUT}s",
+                e,
             )
         }
     }
@@ -99,7 +107,7 @@ class CommandProvider(
             ?: return CommandOutput.Unknown
 
         // Discriminator lives *inside* the "value" key: {"level":"info","value":{"export":"status",...}}
-        val hasDiscriminator = (obj["value"] as? JsonObject)?.containsKey(apiDiscriminator) == true
+        val hasDiscriminator = (obj["value"] as? JsonObject)?.containsKey(API_DISCRIMINATOR) == true
 
         if (hasDiscriminator) {
             runCatching { return commandJsonExport.decodeFromJsonElement(CommandEnvelope.serializer(), obj).value }

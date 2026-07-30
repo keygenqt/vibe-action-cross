@@ -59,12 +59,12 @@ fun AboutView(
                         .border(
                             width = 1.dp,
                             brush = Brush.linearGradient(
-                                colors = listOf(Color(0xFF6366f1), Color(0xFFa78bfa), Color(0xFF10b981))
+                                colors = listOf(Color(0xFF6366f1), Color(0xFFa78bfa), Color(0xFF10b981)),
                             ),
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(8.dp),
                         )
                         .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .padding(horizontal = 18.dp)
+                        .padding(horizontal = 18.dp),
                 )
             }
 

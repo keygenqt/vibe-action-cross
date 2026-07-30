@@ -1,4 +1,8 @@
-package com.keygenqt.vibe.action.lottie
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
+package com.keygenqt.vibe.action.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -45,22 +49,24 @@ fun LoadingLottieAnimation(modifier: Modifier = Modifier) {
             .size(80.dp)
             .then(modifier)
             .border(
-                width = 1.dp, brush = Brush.linearGradient(
+                width = 1.dp,
+                brush = Brush.linearGradient(
                     colors = listOf(
                         Color(0xFF009FFD).copy(alpha = 0.8f),
                         Color(0xFFFB00FD).copy(alpha = 0.8f),
-                    )
-                ), shape = CircleShape
+                    ),
+                ),
+                shape = CircleShape,
             )
             .clip(CircleShape)
             .background(MaterialTheme.colorScheme.surfaceBright),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         InfiniteAnimation(
             animation = animation,
             modifier = Modifier
                 .matchParentSize()
-                .scale(1.4f)
+                .scale(1.4f),
         )
     }
 }
@@ -77,7 +83,7 @@ private fun InfiniteAnimation(animation: Animation, modifier: Modifier) {
         animationSpec = infiniteRepeatable(
             animation = tween((animation.duration * 1000).roundToInt(), easing = LinearEasing),
             repeatMode = RepeatMode.Restart,
-        )
+        ),
     )
     val invalidationController = remember { InvalidationController() }
     Canvas(modifier) {

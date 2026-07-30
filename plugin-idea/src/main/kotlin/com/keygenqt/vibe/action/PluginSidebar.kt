@@ -18,11 +18,9 @@ import com.keygenqt.vibe.action.bridge.PluginEnvironment
 import com.keygenqt.vibe.action.resources.IconBundle
 import org.jetbrains.jewel.bridge.theme.SwingBridgeTheme
 import org.jetbrains.jewel.foundation.ExperimentalJewelApi
-import org.jetbrains.jewel.ui.util.toArgbHexString
 import java.awt.BorderLayout
 import javax.swing.Icon
 import javax.swing.JComponent
-import javax.swing.UIManager
 
 /**
  * IntelliJ tool window factory for the plugin sidebar.

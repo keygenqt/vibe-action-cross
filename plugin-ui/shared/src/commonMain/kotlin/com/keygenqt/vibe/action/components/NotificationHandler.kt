@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.components
 
 import androidx.compose.runtime.Composable
@@ -24,11 +28,15 @@ fun NotificationHandler(
 
     val notifTitle = if (titleKey != null) {
         env.bridge.res.string(titleKey, *titleParams)
-    } else null
+    } else {
+        null
+    }
 
     val notifMessage = if (messageKey != null) {
         env.bridge.res.string(messageKey, *messageParams)
-    } else null
+    } else {
+        null
+    }
 
     // Restart effect if a new notification arrives OR if strings finish loading
     LaunchedEffect(notification, notifTitle, notifMessage) {

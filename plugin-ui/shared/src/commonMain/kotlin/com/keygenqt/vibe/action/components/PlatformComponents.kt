@@ -6,10 +6,6 @@ package com.keygenqt.vibe.action.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.TextUnit
 
 /**
  * Platform-specific component declarations — resolved via expect/actual per target.
@@ -19,6 +15,7 @@ expect object PlatformComponents {
     fun Button(
         onClick: () -> Unit,
         modifier: Modifier,
+        enabled: Boolean,
         content: @Composable () -> Unit,
     ): (@Composable () -> Unit)?
 }
@@ -31,6 +28,7 @@ object PlatformComponentsEmpty {
     fun Button(
         onClick: () -> Unit,
         modifier: Modifier,
+        enabled: Boolean,
         content: @Composable () -> Unit,
     ): (@Composable () -> Unit)? = null
 }

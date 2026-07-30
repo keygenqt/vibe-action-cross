@@ -12,7 +12,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -23,24 +22,14 @@ import kotlin.coroutines.resumeWithException
 class ActionRepository(
     private val env: Environment,
     private val commandProvider: CommandProvider,
+    private val toolingRepository: ToolingRepository,
     private val logger: Logger,
 ) {
     /**
      * Loads the full action list with resolved YAML paths for custom actions.
      */
     suspend fun loadActions(): List<ActionModel> {
-        val dir = try {
-            commandProvider.status()
-                .filterIsInstance<CommandOutput.Status>()
-                .firstOrNull()
-                ?.actionsPath
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            logger.w(e) { "Status command failed, continuing without actionsPath" }
-            null
-        }
-
+        val dir = toolingRepository.getStatus(forceRefresh = true)?.actionsPath
         val fileExists = env.bridge.sys.fileExists
 
         val actionOutputs = commandProvider.actions()
@@ -128,7 +117,6 @@ class ActionRepository(
             onSuccess()
         }
     }
-
 
     private suspend fun getSuspendValue(callback: (((String?) -> Unit) -> Unit)?): String? {
         if (callback == null) return null

@@ -28,7 +28,6 @@
     <!-- Notifications -->
     <string name="notification_load_error_title">Ошибка загрузки</string>
     <string name="notification_load_error_desc">Не удалось загрузить действия: %1$s</string>
-
     <string name="notification_action_completed_title">Действие завершено</string>
     <string name="notification_action_completed_desc">%1$s успешно завершено</string>
     <string name="notification_action_empty_output_desc">%1$s не вернуло данных</string>
@@ -36,4 +35,10 @@
     <string name="notification_action_cancelled_desc">%1$s отменено</string>
     <string name="notification_action_failed_title">Действие не выполнено</string>
     <string name="notification_action_failed_desc">%1$s не выполнено</string>
+
+    <!-- Cache Notifications -->
+    <string name="notification_cache_cleaned_title">Кэш очищен</string>
+    <string name="notification_cache_cleaned_desc">Кэш успешно очищен</string>
+    <string name="notification_cache_clean_failed_title">Ошибка очистки кэша</string>
+    <string name="notification_cache_clean_failed_desc">Не удалось очистить кэш: %1$s</string>
 </resources>

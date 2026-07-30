@@ -41,49 +41,52 @@ class PluginResBridge : ResBridge {
      * Returns a localized string from the plugin message bundle.
      */
     @Composable
-    override fun string(key: PlatformString, vararg params: Any?): String {
-        return remember(key, *params) {
-            val bundleKey = when (key) {
-                // Root Actions screen — tool window stripe label
-                PlatformString.SidebarTitle -> "toolwindow.stripe.Sidebar"
+    override fun string(key: PlatformString, vararg params: Any?): String = remember(key, *params) {
+        val bundleKey = when (key) {
+            // Root Actions screen — tool window stripe label
+            PlatformString.SidebarTitle -> "toolwindow.stripe.Sidebar"
 
-                // Actions screen
-                PlatformString.MainTitle -> "main.title"
+            // Actions screen
+            PlatformString.MainTitle -> "main.title"
 
-                // About screen
-                PlatformString.AboutTitle -> "about.title"
-                PlatformString.AboutDescription1 -> "about.description1"
-                PlatformString.AboutDescription2 -> "about.description2"
-                PlatformString.AboutRequirement -> "about.requirement"
+            // About screen
+            PlatformString.AboutTitle -> "about.title"
+            PlatformString.AboutDescription1 -> "about.description1"
+            PlatformString.AboutDescription2 -> "about.description2"
+            PlatformString.AboutRequirement -> "about.requirement"
 
-                // Settings screen
-                PlatformString.SettingsTitle -> "settings.title"
-                PlatformString.SettingsOpenConfigButton -> "settings.open_config_button"
-                PlatformString.SettingsCleanCacheButton -> "settings.clean_cache_button"
-                PlatformString.SettingsStatusActionsLabel -> "settings.status.actions_label"
-                PlatformString.SettingsStatusVersionLabel -> "settings.status.version_label"
-                PlatformString.SettingsStatusConfigLabel -> "settings.status.config_label"
-                PlatformString.SettingsConfigDescription -> "settings.config.description"
-                PlatformString.SettingsCacheDescription -> "settings.cache.description"
-                PlatformString.SettingsStatusDescription -> "settings.status.description"
+            // Settings screen
+            PlatformString.SettingsTitle -> "settings.title"
+            PlatformString.SettingsOpenConfigButton -> "settings.open_config_button"
+            PlatformString.SettingsCleanCacheButton -> "settings.clean_cache_button"
+            PlatformString.SettingsStatusActionsLabel -> "settings.status.actions_label"
+            PlatformString.SettingsStatusVersionLabel -> "settings.status.version_label"
+            PlatformString.SettingsStatusConfigLabel -> "settings.status.config_label"
+            PlatformString.SettingsConfigDescription -> "settings.config.description"
+            PlatformString.SettingsCacheDescription -> "settings.cache.description"
+            PlatformString.SettingsStatusDescription -> "settings.status.description"
 
-                // Common
-                PlatformString.CommonRefresh -> "common.refresh"
+            // Common
+            PlatformString.CommonRefresh -> "common.refresh"
 
-                // Action notifications
-                PlatformString.NotifLoadErrorTitle -> "notif.load.error.title"
-                PlatformString.NotifLoadErrorDesc -> "notif.load.error.desc"
+            // Action notifications
+            PlatformString.NotifLoadErrorTitle -> "notif.load.error.title"
+            PlatformString.NotifLoadErrorDesc -> "notif.load.error.desc"
+            PlatformString.NotifActionCompletedTitle -> "notif.action.completed.title"
+            PlatformString.NotifActionCompletedDesc -> "notif.action.completed.desc"
+            PlatformString.NotifEmptyOutputDesc -> "notif.action.emptyOutput.desc"
+            PlatformString.NotifActionCancelledTitle -> "notif.action.cancelled.title"
+            PlatformString.NotifActionCancelledDesc -> "notif.action.cancelled.desc"
+            PlatformString.NotifActionFailedTitle -> "notif.action.failed.title"
+            PlatformString.NotifActionFailedDesc -> "notif.action.failed.desc"
 
-                PlatformString.NotifActionCompletedTitle -> "notif.action.completed.title"
-                PlatformString.NotifActionCompletedDesc -> "notif.action.completed.desc"
-                PlatformString.NotifEmptyOutputDesc -> "notif.action.emptyOutput.desc"
-                PlatformString.NotifActionCancelledTitle -> "notif.action.cancelled.title"
-                PlatformString.NotifActionCancelledDesc -> "notif.action.cancelled.desc"
-                PlatformString.NotifActionFailedTitle -> "notif.action.failed.title"
-                PlatformString.NotifActionFailedDesc -> "notif.action.failed.desc"
-            }
-            MessageBundle.message(bundleKey, *params)
+            // Cache Notifications
+            PlatformString.NotifCacheCleanedTitle -> "notif.cache.cleaned.title"
+            PlatformString.NotifCacheCleanedDesc -> "notif.cache.cleaned.desc"
+            PlatformString.NotifCacheCleanFailedTitle -> "notif.cache.clean.failed.title"
+            PlatformString.NotifCacheCleanFailedDesc -> "notif.cache.clean.failed.desc"
         }
+        MessageBundle.message(bundleKey, *params)
     }
 }
 

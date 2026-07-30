@@ -104,8 +104,11 @@ fun ActionPlayButton(
             .size(28.dp)
             .clip(CircleShape)
             .background(
-                if (isRunning) MaterialTheme.colorScheme.errorContainer
-                else MaterialTheme.colorScheme.primaryContainer
+                if (isRunning) {
+                    MaterialTheme.colorScheme.errorContainer
+                } else {
+                    MaterialTheme.colorScheme.primaryContainer
+                },
             )
             .clickable(onClick = if (isRunning) onCancel else onRun),
         contentAlignment = Alignment.Center,

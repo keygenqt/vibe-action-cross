@@ -65,23 +65,19 @@ function handleRunCli(webview, args, requestId) {
 
 /**
  * Opens a file in the VS Code editor via vscode.window.showTextDocument.
+ * preview: false ensures it opens a new tab instead of replacing an unpinned one.
  */
-function handleOpenFile(webview, args, requestId) {
+async function handleOpenFile(webview, args, requestId) {
   const [filePath] = args
   const uri = vscode.Uri.file(filePath)
-  vscode.window.showTextDocument(uri).then(
-      () => {
-        if (requestId != null) {
-          webview.postMessage({ requestId, result: true })
-        }
-      },
-      err => {
-        console.error('openFile failed:', err)
-        if (requestId != null) {
-          webview.postMessage({ requestId, result: false })
-        }
-      }
-  )
+
+  try {
+    await vscode.window.showTextDocument(uri, { preview: false })
+    if (requestId != null) webview.postMessage({ requestId, result: true })
+  } catch (err) {
+    console.error('openFile failed:', err)
+    if (requestId != null) webview.postMessage({ requestId, result: false })
+  }
 }
 
 /**

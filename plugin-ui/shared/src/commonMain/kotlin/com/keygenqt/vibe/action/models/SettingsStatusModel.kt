@@ -11,4 +11,7 @@ data class SettingsStatusModel(
     val actionsCount: Int,
     val cliVersion: String,
     val configVersion: String,
+    val actionsPath: String,
+    val configPath: String,
+    val cachePath: String,
 )

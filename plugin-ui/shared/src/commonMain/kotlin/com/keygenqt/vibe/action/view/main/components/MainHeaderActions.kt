@@ -1,8 +1,11 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.view.main.components
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
@@ -31,13 +34,13 @@ fun MainHeaderActions(
     IconButton(
         onClick = onRefresh,
         enabled = !isRefreshing,
-        modifier = Modifier.size(24.dp)
+        modifier = Modifier.size(24.dp),
     ) {
         if (isRefreshing) {
             CircularProgressIndicator(
                 modifier = Modifier.size(16.dp),
                 strokeWidth = 2.dp,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
         } else {
             Icon(
@@ -72,4 +75,3 @@ fun MainHeaderActions(
         )
     }
 }
-

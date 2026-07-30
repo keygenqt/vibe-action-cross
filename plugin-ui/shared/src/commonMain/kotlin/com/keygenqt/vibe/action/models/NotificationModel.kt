@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.models
 
 import com.keygenqt.vibe.action.resources.PlatformString
@@ -12,27 +16,37 @@ data class NotificationModel(
     companion object {
         fun loadError(message: String) = NotificationModel(
             title = NotificationItem(PlatformString.NotifLoadErrorTitle),
-            message = NotificationItem(PlatformString.NotifLoadErrorDesc, listOf(message))
+            message = NotificationItem(PlatformString.NotifLoadErrorDesc, listOf(message)),
         )
 
         fun actionCompleted(name: String) = NotificationModel(
             title = NotificationItem(PlatformString.NotifActionCompletedTitle),
-            message = NotificationItem(PlatformString.NotifActionCompletedDesc, listOf(name))
+            message = NotificationItem(PlatformString.NotifActionCompletedDesc, listOf(name)),
         )
 
         fun actionEmptyOutput(name: String) = NotificationModel(
             title = NotificationItem(PlatformString.NotifActionCompletedTitle),
-            message = NotificationItem(PlatformString.NotifEmptyOutputDesc, listOf(name))
+            message = NotificationItem(PlatformString.NotifEmptyOutputDesc, listOf(name)),
         )
 
         fun actionCancelled(name: String) = NotificationModel(
             title = NotificationItem(PlatformString.NotifActionCancelledTitle),
-            message = NotificationItem(PlatformString.NotifActionCancelledDesc, listOf(name))
+            message = NotificationItem(PlatformString.NotifActionCancelledDesc, listOf(name)),
         )
 
         fun actionFailed(name: String) = NotificationModel(
             title = NotificationItem(PlatformString.NotifActionFailedTitle),
-            message = NotificationItem(PlatformString.NotifActionFailedDesc, listOf(name))
+            message = NotificationItem(PlatformString.NotifActionFailedDesc, listOf(name)),
+        )
+
+        fun cacheCleaned() = NotificationModel(
+            title = NotificationItem(PlatformString.NotifCacheCleanedTitle),
+            message = NotificationItem(PlatformString.NotifCacheCleanedDesc),
+        )
+
+        fun cacheCleanFailed(message: String) = NotificationModel(
+            title = NotificationItem(PlatformString.NotifCacheCleanFailedTitle),
+            message = NotificationItem(PlatformString.NotifCacheCleanFailedDesc, listOf(message)),
         )
     }
 }

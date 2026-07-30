@@ -1,3 +1,7 @@
+/**
+ * SPDX-FileCopyrightText: 2026 Vitaliy Zarubin <keygenqt@yandex.ru>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package com.keygenqt.vibe.action.command
 
 import kotlinx.serialization.SerialName
@@ -8,7 +12,7 @@ import kotlinx.serialization.json.JsonObject
 /**
  * Discriminator field used by CLI to distinguish message types.
  */
-const val apiDiscriminator = "export"
+const val API_DISCRIMINATOR = "export"
 
 /**
  * Default JSON parser without class discriminator, used for general messages.
@@ -22,7 +26,7 @@ val commandJson = Json {
  */
 val commandJsonExport = Json {
     ignoreUnknownKeys = true
-    classDiscriminator = apiDiscriminator
+    classDiscriminator = API_DISCRIMINATOR
 }
 
 /**
@@ -31,7 +35,7 @@ val commandJsonExport = Json {
 @Serializable
 data class CommandEnvelope(
     val level: String,
-    val value: CommandOutput
+    val value: CommandOutput,
 )
 
 /**
@@ -50,6 +54,10 @@ sealed class CommandOutput {
         val config: String,
         @SerialName("actions_path")
         val actionsPath: String,
+        @SerialName("config_path")
+        val configPath: String,
+        @SerialName("cache_path")
+        val cachePath: String,
     ) : CommandOutput()
 
     /**
