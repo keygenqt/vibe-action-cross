@@ -9,6 +9,7 @@ import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputTypes
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
@@ -190,6 +191,23 @@ class PluginSysBridge(val project: Project) : SysBridge {
     }
 
     /**
+     * Writes text content to a file on the local filesystem.
+     */
+    override val writeFile: (suspend (String, String) -> Unit) = { path, content ->
+        withContext(Dispatchers.IO) {
+            File(path).writeText(content)
+        }
+    }
+
+    /**
+     * Deletes a file from the local filesystem and synchronizes the VFS.
+     * Note: Performs synchronous I/O. Must not be called on the EDT.
+     */
+    override val deleteFile: (suspend (String) -> Boolean) = { path ->
+        withContext(Dispatchers.IO) { File(path).delete() }
+    }
+
+    /**
      * Checks if a file exists at the given absolute path (JVM-local filesystem).
      * Blocking I/O is moved off the calling thread (typically EDT).
      */
@@ -282,6 +300,22 @@ class PluginSysBridge(val project: Project) : SysBridge {
      * Returns the currently selected text editor from FileEditorManager, or null if none.
      */
     private fun getActiveEditor(): Editor? = FileEditorManager.getInstance(project).selectedTextEditor
+
+    /**
+     * Loads a simple string preference from IntelliJ's application-level
+     * persistent storage (PropertiesComponent).
+     */
+    override val loadPreference: (suspend (String) -> String?) = { key ->
+        PropertiesComponent.getInstance().getValue(key)
+    }
+
+    /**
+     * Saves a simple string preference to IntelliJ's application-level
+     * persistent storage (PropertiesComponent).
+     */
+    override val savePreference: ((String, String) -> Unit) = { key, value ->
+        PropertiesComponent.getInstance().setValue(key, value)
+    }
 }
 
 /**

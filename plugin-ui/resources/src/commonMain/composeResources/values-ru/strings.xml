@@ -5,6 +5,10 @@
     <!-- Main screen -->
     <string name="main_title">Действия</string>
 
+    <!-- Action delete dialog -->
+    <string name="delete_action_title">Удалить действие</string>
+    <string name="delete_action_message">Вы уверены, что хотите удалить "%1$s"?</string>
+
     <!-- About screen -->
     <string name="about_title">О плагине</string>
     <string name="about_description1">Эта панель отрисовывается из единой кодовой базы Kotlin Multiplatform / Compose Multiplatform — один UI, две платформы: плагин для IntelliJ Platform и расширение для VS Code.</string>
@@ -35,10 +39,24 @@
     <string name="notification_action_cancelled_desc">%1$s отменено</string>
     <string name="notification_action_failed_title">Действие не выполнено</string>
     <string name="notification_action_failed_desc">%1$s не выполнено</string>
+    <string name="notification_action_delete_success_title">Действие удалено</string>
+    <string name="notification_action_delete_success_desc">%1$s успешно удалено</string>
+    <string name="notification_action_delete_failed_title">Ошибка удаления</string>
+    <string name="notification_action_delete_failed_desc">Не удалось удалить %1$s</string>
 
     <!-- Cache Notifications -->
     <string name="notification_cache_cleaned_title">Кэш очищен</string>
     <string name="notification_cache_cleaned_desc">Кэш успешно очищен</string>
     <string name="notification_cache_clean_failed_title">Ошибка очистки кэша</string>
     <string name="notification_cache_clean_failed_desc">Не удалось очистить кэш: %1$s</string>
+
+    <!-- Appearance settings -->
+    <string name="settings_appearance_title">Внешний вид</string>
+    <string name="settings_appearance_description">Скройте описания действий, чтобы сделать список более компактным. Будут отображаться только названия действий.</string>
+    <string name="settings_show_descriptions_label">Показывать описания действий</string>
+
+    <!-- Actions group -->
+    <string name="action_group_favorite">Избранное</string>
+    <string name="action_group_custom">Пользовательские</string>
+    <string name="action_group_default">По умолчанию</string>
 </resources>

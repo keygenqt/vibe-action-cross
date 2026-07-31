@@ -64,6 +64,18 @@ interface SysBridge {
     val openFile: ((path: String) -> Unit)?
 
     /**
+     * Writes content to a file at the given absolute path.
+     * Creates the file if it does not exist, or overwrites it.
+     */
+    val writeFile: (suspend (path: String, content: String) -> Unit)?
+
+    /**
+     * Deletes a file at the given absolute path.
+     * Returns true if deleted, false if the file does not exist or deletion failed.
+     */
+    val deleteFile: (suspend (String) -> Boolean)?
+
+    /**
      * Checks whether a file exists at the given absolute path.
      * Suspends until the result is available. On platforms with synchronous
      * I/O the call returns immediately.
@@ -94,4 +106,15 @@ interface SysBridge {
      * Callback that shows a multiline text dialog/output to the user.
      */
     val showTextDialog: ((title: String, text: String) -> Unit)?
+
+    /**
+     * Loads a simple string preference from the host's persistent storage.
+     * Returns null if the key does not exist.
+     */
+    val loadPreference: (suspend (key: String) -> String?)?
+
+    /**
+     * Saves a simple string preference to the host's persistent storage.
+     */
+    val savePreference: ((key: String, value: String) -> Unit)?
 }

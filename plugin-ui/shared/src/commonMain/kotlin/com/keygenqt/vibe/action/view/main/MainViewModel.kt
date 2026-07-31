@@ -7,17 +7,23 @@ package com.keygenqt.vibe.action.view.main
 import co.touchlab.kermit.Logger
 import com.keygenqt.vibe.action.base.AppEvent
 import com.keygenqt.vibe.action.base.BaseViewModel
+import com.keygenqt.vibe.action.base.Constants
 import com.keygenqt.vibe.action.base.EventBus
+import com.keygenqt.vibe.action.base.PreferenceKey
 import com.keygenqt.vibe.action.bridge.Environment
 import com.keygenqt.vibe.action.bridge.PlatformView
 import com.keygenqt.vibe.action.command.ActionRepository
+import com.keygenqt.vibe.action.command.ToolingRepository
 import com.keygenqt.vibe.action.models.ActionModel
 import com.keygenqt.vibe.action.models.NotificationModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -34,9 +40,15 @@ class MainViewModel(
     env: Environment,
     view: PlatformView,
     private val actionRepository: ActionRepository,
+    private val toolingRepository: ToolingRepository,
     private val eventBus: EventBus,
     private val logger: Logger,
 ) : BaseViewModel(env, view) {
+
+    /**
+     * Holds the starred action ids loaded from persistent storage.
+     */
+    private val starredIds = MutableStateFlow<Set<String>>(emptySet())
 
     /**
      * Monotonic sequence of runAction invocations. Guards late continuations
@@ -55,10 +67,17 @@ class MainViewModel(
     val notification: StateFlow<NotificationModel?> = _notification.asStateFlow()
 
     /**
-     * Holds the current list of actions displayed in the UI.
+     * Raw actions loaded from the repository.
      */
-    private val _actions = MutableStateFlow<List<ActionModel>>(emptyList())
-    val actions: StateFlow<List<ActionModel>> = _actions.asStateFlow()
+    private val rawActions = MutableStateFlow<List<ActionModel>>(emptyList())
+
+    /**
+     * Holds the current list of actions displayed in the UI.
+     * Merges raw actions with starred ids to update the isStarred flag.
+     */
+    val actions: StateFlow<List<ActionModel>> = rawActions.combine(starredIds) { actions, starredIds ->
+        actions.map { it.copy(isStarred = it.id in starredIds) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     /**
      * Stores the id of the action whose detail section is expanded, or null if none.
@@ -79,6 +98,18 @@ class MainViewModel(
     val runningActionId: StateFlow<String?> = _runningActionId.asStateFlow()
 
     /**
+     * Mutable state flow controlling whether action descriptions are shown.
+     */
+    private val _showDescriptions = MutableStateFlow(true)
+    val showDescriptions: StateFlow<Boolean> = _showDescriptions.asStateFlow()
+
+    /**
+     * Holds the action currently pending deletion confirmation.
+     */
+    private val _actionToDelete = MutableStateFlow<ActionModel?>(null)
+    val actionToDelete = _actionToDelete.asStateFlow()
+
+    /**
      * Serializes loadData() calls — init and refresh() must not overlap.
      */
     private val loadMutex = Mutex()
@@ -96,15 +127,17 @@ class MainViewModel(
     init {
         loadData(false)
         listenToEvents()
+        loadStarredIds()
+        loadShowDescriptions()
     }
 
     /**
      * Reloads the action list. Cancels any in-progress load and
      * starts a new one with a small artificial delay.
      */
-    fun refresh() {
+    fun refresh(showLoader: Boolean = true) {
         loadJob?.cancel()
-        loadData(true)
+        loadData(showLoader)
     }
 
     /**
@@ -120,8 +153,33 @@ class MainViewModel(
                         logger.d { "Cache cleared event received, refreshing actions." }
                         refresh()
                     }
+                    AppEvent.DescriptionsVisibilityChanged -> {
+                        logger.d { "Descriptions visibility changed, reloading preference." }
+                        loadShowDescriptions()
+                    }
                 }
             }
+        }
+    }
+
+    /**
+     * Loads starred action ids from persistent storage into the StateFlow.
+     */
+    private fun loadStarredIds() {
+        viewModelScope.launch {
+            val str = env.bridge.sys.loadPreference?.invoke(PreferenceKey.StarredActions.name)
+            starredIds.value = str?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
+        }
+    }
+
+    /**
+     * Loads the "show descriptions" preference from persistent storage
+     * and updates the corresponding state flow.
+     */
+    private fun loadShowDescriptions() {
+        viewModelScope.launch {
+            val str = env.bridge.sys.loadPreference?.invoke(PreferenceKey.ShowDescriptions.name)
+            _showDescriptions.value = str?.toBoolean() ?: true
         }
     }
 
@@ -137,7 +195,7 @@ class MainViewModel(
                     delay(1000.milliseconds)
                 }
                 try {
-                    _actions.value = actionRepository.loadActions()
+                    rawActions.value = actionRepository.loadActions()
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
@@ -158,15 +216,26 @@ class MainViewModel(
     }
 
     /**
+     * Toggles the star state for an action and saves the new set to storage.
+     */
+    fun onToggleStar(id: String) {
+        starredIds.update { current ->
+            val newSet = if (current.contains(id)) current - id else current + id
+            env.bridge.sys.savePreference?.invoke(PreferenceKey.StarredActions.name, newSet.joinToString(","))
+            newSet
+        }
+    }
+
+    /**
      * Runs the action with the specified id, updates the text, and pastes it back.
      * Cancels any previously running action before starting.
      *
      * Cancellation kills the previous CLI process via the CliProcess handle
-     * (see CommandProvider.execute) — no 'stop' command is needed; the new
+     * (see CommandProvider Execute) — no 'stop' command is needed; the new
      * process's Rust RunGuard backstops the shutdown.
      */
     fun runAction(id: String) {
-        val action = _actions.value.find { it.id == id } ?: return
+        val action = rawActions.value.find { it.id == id } ?: return
 
         // Supersede the previous run. Its catch/finally below are guarded by
         // runSeq, so they won't clobber this run's state or notifications.
@@ -226,15 +295,80 @@ class MainViewModel(
     }
 
     /**
-     * Deletes the custom action with the given id (only custom actions are allowed).
+     * Opens the action's YAML configuration file in the platform's native editor.
+     * Does nothing if the action has no file path or if the platform does not support opening files.
      */
-    fun deleteAction(id: String) {
-        val action = _actions.value.find { it.id == id } ?: return
-        if (!action.isCustom) {
-            logger.w { "Нельзя удалить встроенный экшен: $id" }
-            return
+    fun editAction(id: String) {
+        val action = rawActions.value.find { it.id == id } ?: return
+        viewModelScope.launch {
+            val path = action.yamlPath ?: return@launch
+            env.bridge.sys.openFile?.invoke(path)
         }
-        logger.d { "Удаление экшена: $id" }
-        // TODO: делегировать удаление в ActionRepository
+    }
+
+    /**
+     * Requests deletion by triggering the UI dialog.
+     */
+    fun requestDeleteAction(id: String) {
+        _actionToDelete.value = rawActions.value.find { it.id == id }
+    }
+
+    /**
+     * Cancels the deletion dialog.
+     */
+    fun cancelDeleteAction() {
+        _actionToDelete.value = null
+    }
+
+    /**
+     * Confirms and executes the deletion.
+     */
+    fun confirmDeleteAction() {
+        val action = _actionToDelete.value ?: return
+        _actionToDelete.value = null
+        _expandedActionId.value = null
+
+        val path = action.yamlPath ?: return
+
+        viewModelScope.launch {
+            val deleted = env.bridge.sys.deleteFile?.invoke(path) ?: false
+            _notification.value = if (deleted) {
+                rawActions.update { actions -> actions.filterNot { it.id == action.id } }
+                NotificationModel.actionDeleteSuccess(action.name)
+            } else {
+                NotificationModel.actionDeleteFailed(action.name)
+            }
+        }
+    }
+
+    /**
+     * Creates a new action file from the template and opens it in the editor.
+     */
+    fun createAction() {
+        viewModelScope.launch {
+            val status = toolingRepository.getStatus()
+            val basePath = status?.actionsPath
+            val sys = env.bridge.sys
+
+            if (basePath == null) {
+                logger.e { "Cannot get actions path to create new action" }
+                return@launch
+            }
+
+            val separator = if (basePath.endsWith("/") || basePath.endsWith("\\")) "" else "/"
+            var counter = 0
+            var fileName = "my-action"
+            var fullPath = "$basePath$separator$fileName.yaml"
+
+            while (sys.fileExists?.invoke(fullPath) == true) {
+                counter++
+                fileName = "my-action-$counter"
+                fullPath = "$basePath$separator$fileName.yaml"
+            }
+
+            sys.writeFile?.invoke(fullPath, Constants.ACTION_TEMPLATE.replace("{name}", fileName))
+            sys.openFile?.invoke(fullPath)
+        }
+        refresh(showLoader = false)
     }
 }

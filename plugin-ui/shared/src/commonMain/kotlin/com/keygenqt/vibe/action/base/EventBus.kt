@@ -25,4 +25,10 @@ sealed class AppEvent {
      * Triggers a refresh of the actions list in MainViewModel.
      */
     object CacheCleared : AppEvent()
+
+    /**
+     * Emitted when the user toggles the "Show descriptions" setting.
+     * Triggers a reload of the preference in MainViewModel.
+     */
+    object DescriptionsVisibilityChanged : AppEvent()
 }

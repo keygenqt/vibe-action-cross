@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -18,10 +19,11 @@ import com.keygenqt.vibe.action.bridge.ViewEnvironment
 import com.keygenqt.vibe.action.components.LoadingLottieAnimation
 import com.keygenqt.vibe.action.components.NotificationHandler
 import com.keygenqt.vibe.action.components.ScreenScaffold
+import com.keygenqt.vibe.action.models.ActionModel
 import com.keygenqt.vibe.action.resources.PlatformIcon
 import com.keygenqt.vibe.action.resources.PlatformString
+import com.keygenqt.vibe.action.theme.ColorsApp
 import com.keygenqt.vibe.action.view.main.components.ActionsList
-import com.keygenqt.vibe.action.view.main.components.ActionsToolbar
 import com.keygenqt.vibe.action.view.main.components.MainHeaderActions
 import org.koin.compose.koinInject
 
@@ -40,10 +42,18 @@ fun MainView(
     val expandedActionId by viewModel.expandedActionId.collectAsState()
     val runningActionId by viewModel.runningActionId.collectAsState()
     val notification by viewModel.notification.collectAsState()
+    val showDescriptions by viewModel.showDescriptions.collectAsState()
+    val actionToDelete by viewModel.actionToDelete.collectAsState()
 
     NotificationHandler(
         notification = notification,
         onClear = viewModel::clearNotification,
+    )
+
+    DeleteActionDialogHandler(
+        actionToDelete = actionToDelete,
+        onConfirm = viewModel::confirmDeleteAction,
+        onCancel = viewModel::cancelDeleteAction,
     )
 
     ScreenScaffold(
@@ -54,12 +64,14 @@ fun MainView(
                 painter = env.bridge.res.icon(PlatformIcon.AppIcon),
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
+                tint = ColorsApp.accent,
             )
         },
         actions = {
             MainHeaderActions(
                 onNavigateToAbout = onNavigateToAbout,
                 onNavigateToSettings = onNavigateToSettings,
+                onCreate = viewModel::createAction,
                 onRefresh = viewModel::refresh,
                 isRefreshing = isLoading,
             )
@@ -73,16 +85,54 @@ fun MainView(
                 LoadingLottieAnimation(modifier = Modifier.fillMaxSize())
             }
         } else {
-            ActionsToolbar(count = actions.size)
             ActionsList(
                 actions = actions,
                 expandedActionId = expandedActionId,
                 runningActionId = runningActionId,
+                showDescriptions = showDescriptions,
                 onToggleExpanded = viewModel::toggleExpanded,
                 onRun = viewModel::runAction,
+                onEdit = viewModel::editAction,
                 onCancel = viewModel::cancelAction,
-                onDelete = viewModel::deleteAction,
+                onDelete = viewModel::requestDeleteAction,
+                onToggleStar = viewModel::onToggleStar,
             )
+        }
+    }
+}
+
+/**
+ * Observes action deletion requests and triggers a native confirmation dialog.
+ */
+@Composable
+fun DeleteActionDialogHandler(
+    actionToDelete: ActionModel?,
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit,
+) {
+    val env = ViewEnvironment.current
+
+    // Extract strings outside LaunchedEffect
+    val title = if (actionToDelete != null) {
+        env.bridge.res.string(PlatformString.DeleteActionTitle)
+    } else {
+        null
+    }
+
+    val message = if (actionToDelete != null) {
+        env.bridge.res.string(PlatformString.DeleteActionMessage, actionToDelete.name)
+    } else {
+        null
+    }
+
+    LaunchedEffect(actionToDelete, title, message) {
+        if (actionToDelete != null && !title.isNullOrEmpty() && !message.isNullOrEmpty()) {
+            env.bridge.sys.showConfirmDialog?.invoke(
+                title,
+                message,
+            ) { confirmed ->
+                if (confirmed) onConfirm() else onCancel()
+            }
         }
     }
 }

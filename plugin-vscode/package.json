@@ -4,8 +4,12 @@
   "description": "Native VS Code panel for Vibe Action — discover and run YAML-based shell/LLM flows with live feedback, no manual tasks.json setup required.",
   "version": "0.0.1",
   "publisher": "keygenqt",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/keygenqt/vibe-action.git"
+  },
   "engines": {
-    "vscode": "^1.125.0"
+    "vscode": "^1.80.0"
   },
   "categories": [
     "AI",
@@ -35,11 +39,12 @@
       ]
     }
   },
+  "scripts": {
+    "package": "vsce package"
+  },
   "devDependencies": {
     "@types/node": "24.x",
-    "@types/vscode": "^1.125.0"
-  },
-  "dependencies": {
-    "vscode": "^1.1.37"
+    "@types/vscode": "^1.80.0",
+    "@vscode/vsce": "^2.27.0"
   }
 }

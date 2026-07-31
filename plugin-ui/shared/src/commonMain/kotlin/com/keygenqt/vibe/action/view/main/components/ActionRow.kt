@@ -10,10 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.keygenqt.vibe.action.models.ActionModel
-import com.keygenqt.vibe.action.models.icon
+import com.keygenqt.vibe.action.theme.ColorsApp
 
 /**
  * A single action row: icon, name/description, circular play/stop button.
@@ -34,18 +31,21 @@ fun ActionRow(
     action: ActionModel,
     expanded: Boolean,
     isRunning: Boolean,
+    showDescriptions: Boolean,
     onToggleExpanded: () -> Unit,
     onRun: () -> Unit,
+    onEdit: () -> Unit,
     onCancel: () -> Unit,
-    onDelete: () -> Unit,
+    onDelete: (() -> Unit)?,
+    onToggleStar: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onToggleExpanded)
-                .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.Top,
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = if (showDescriptions) Alignment.Top else Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -54,25 +54,34 @@ fun ActionRow(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(modifier = Modifier.width(34.dp)) {
-                        Icon(
-                            imageVector = action.icon,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp),
-                        )
+                        Box(modifier = Modifier.padding(top = if (showDescriptions) 4.dp else 0.dp)) {
+                            IconButton(
+                                onClick = onToggleStar,
+                                modifier = Modifier.size(24.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = if (action.isStarred) ColorsApp.starActive else MaterialTheme.colorScheme.onBackground,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        }
                     }
                     Text(text = action.name, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 }
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 34.dp),
-                    text = action.description,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                if (showDescriptions) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 34.dp),
+                        text = action.description,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
-            Box(modifier = Modifier.padding(top = 10.dp)) {
+            Box(modifier = Modifier.padding(top = if (showDescriptions) 10.dp else 0.dp)) {
                 ActionPlayButton(
                     isRunning = isRunning,
                     onRun = onRun,
@@ -82,7 +91,10 @@ fun ActionRow(
         }
 
         if (expanded) {
-            ActionRowExpandedMenu(onEdit = { /* @todo: open YAML in editor */ }, onDelete = onDelete)
+            ActionRowExpandedMenu(
+                onEdit = onEdit,
+                onDelete = onDelete,
+            )
         }
 
         HorizontalDivider()
@@ -127,7 +139,10 @@ fun ActionPlayButton(
  * under the row's name/description text.
  */
 @Composable
-fun ActionRowExpandedMenu(onEdit: () -> Unit, onDelete: () -> Unit) {
+fun ActionRowExpandedMenu(
+    onEdit: () -> Unit,
+    onDelete: (() -> Unit)?,
+) {
     Column {
         HorizontalDivider()
         Row(
@@ -141,21 +156,23 @@ fun ActionRowExpandedMenu(onEdit: () -> Unit, onDelete: () -> Unit) {
             Icon(imageVector = Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
             Text(text = "Edit", fontSize = 13.sp)
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onDelete)
-                .padding(start = 50.dp, end = 20.dp, top = 8.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(14.dp),
-            )
-            Text(text = "Delete", fontSize = 13.sp, color = MaterialTheme.colorScheme.error)
+        if (onDelete != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onDelete)
+                    .padding(start = 50.dp, end = 20.dp, top = 8.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(14.dp),
+                )
+                Text(text = "Delete", fontSize = 13.sp, color = MaterialTheme.colorScheme.error)
+            }
         }
     }
 }

@@ -5,6 +5,10 @@
     <!-- Main screen -->
     <string name="main_title">Actions</string>
 
+    <!-- Action delete dialog -->
+    <string name="delete_action_title">Delete Action</string>
+    <string name="delete_action_message">Are you sure you want to delete "%1$s"?</string>
+
     <!-- About screen -->
     <string name="about_title">About</string>
     <string name="about_description1">This panel is rendered from a single Kotlin Multiplatform / Compose Multiplatform codebase — one UI, two targets: an IntelliJ Platform plugin and a VS Code extension.</string>
@@ -35,10 +39,24 @@
     <string name="notification_action_cancelled_desc">%1$s was cancelled</string>
     <string name="notification_action_failed_title">Action Failed</string>
     <string name="notification_action_failed_desc">%1$s failed</string>
+    <string name="notification_action_delete_success_title">Action Deleted</string>
+    <string name="notification_action_delete_success_desc">%1$s deleted successfully</string>
+    <string name="notification_action_delete_failed_title">Delete Failed</string>
+    <string name="notification_action_delete_failed_desc">Failed to delete %1$s</string>
 
     <!-- Cache Notifications -->
     <string name="notification_cache_cleaned_title">Cache Cleaned</string>
     <string name="notification_cache_cleaned_desc">Cache cleaned successfully</string>
     <string name="notification_cache_clean_failed_title">Cache Clean Failed</string>
     <string name="notification_cache_clean_failed_desc">Failed to clean cache: %1$s</string>
+
+    <!-- Appearance settings -->
+    <string name="settings_appearance_title">Appearance</string>
+    <string name="settings_appearance_description">Hide the action descriptions to make the list more compact. Only the action names will be shown.</string>
+    <string name="settings_show_descriptions_label">Show action descriptions</string>
+
+    <!-- Actions group -->
+    <string name="action_group_favorite">Favorites</string>
+    <string name="action_group_custom">Custom</string>
+    <string name="action_group_default">Default</string>
 </resources>

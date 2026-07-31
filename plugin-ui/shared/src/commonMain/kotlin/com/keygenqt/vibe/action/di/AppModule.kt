@@ -37,6 +37,7 @@ val appModule = module {
             env = get(),
             view = PlatformView.Main,
             actionRepository = get(),
+            toolingRepository = get(),
             eventBus = get(),
             logger = get(),
         )

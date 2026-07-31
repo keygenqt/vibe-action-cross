@@ -50,6 +50,10 @@ sealed class CommandOutput {
     @SerialName("status")
     data class Status(
         val actions: Int,
+        @SerialName("actions_custom")
+        val actionsCustom: Int,
+        @SerialName("actions_default")
+        val actionsDefault: Int,
         val version: String,
         val config: String,
         @SerialName("actions_path")
@@ -70,6 +74,8 @@ sealed class CommandOutput {
         val about: String,
         val args: List<ActionArg> = emptyList(),
         val api: ActionApi? = null,
+        @SerialName("is_custom")
+        val isCustom: Boolean = false,
     ) : CommandOutput()
 
     /**

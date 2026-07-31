@@ -16,14 +16,23 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.about_descripti
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_description2
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_requirement
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_title
+import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_custom
+import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_default
+import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_favorite
 import vibe_action_cross.plugin_ui.resources.generated.resources.app_icon
 import vibe_action_cross.plugin_ui.resources.generated.resources.architecture_diagram
 import vibe_action_cross.plugin_ui.resources.generated.resources.common_refresh
+import vibe_action_cross.plugin_ui.resources.generated.resources.delete_action_message
+import vibe_action_cross.plugin_ui.resources.generated.resources.delete_action_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.main_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_cancelled_desc
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_cancelled_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_completed_desc
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_completed_title
+import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_delete_failed_desc
+import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_delete_failed_title
+import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_delete_success_desc
+import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_delete_success_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_empty_output_desc
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_failed_desc
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_action_failed_title
@@ -33,10 +42,13 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.notification_ca
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_cache_cleaned_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_load_error_desc
 import vibe_action_cross.plugin_ui.resources.generated.resources.notification_load_error_title
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_appearance_description
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_appearance_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_cache_description
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_clean_cache_button
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_config_description
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_open_config_button
+import vibe_action_cross.plugin_ui.resources.generated.resources.settings_show_descriptions_label
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_status_actions_label
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_status_config_label
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_status_description
@@ -77,6 +89,10 @@ class ComposeResBridge : ResBridge {
             // Actions screen
             PlatformString.MainTitle -> stringResource(Res.string.main_title, *values)
 
+            // Action delete dialog
+            PlatformString.DeleteActionTitle -> stringResource(Res.string.delete_action_title, *values)
+            PlatformString.DeleteActionMessage -> stringResource(Res.string.delete_action_message, *values)
+
             // About screen
             PlatformString.AboutTitle -> stringResource(Res.string.about_title, *values)
             PlatformString.AboutDescription1 -> stringResource(Res.string.about_description1, *values)
@@ -107,12 +123,26 @@ class ComposeResBridge : ResBridge {
             PlatformString.NotifActionCancelledDesc -> stringResource(Res.string.notification_action_cancelled_desc, *values)
             PlatformString.NotifActionFailedTitle -> stringResource(Res.string.notification_action_failed_title, *values)
             PlatformString.NotifActionFailedDesc -> stringResource(Res.string.notification_action_failed_desc, *values)
+            PlatformString.NotifActionDeleteSuccessTitle -> stringResource(Res.string.notification_action_delete_success_title, *values)
+            PlatformString.NotifActionDeleteSuccessDesc -> stringResource(Res.string.notification_action_delete_success_desc, *values)
+            PlatformString.NotifActionDeleteFailedTitle -> stringResource(Res.string.notification_action_delete_failed_title, *values)
+            PlatformString.NotifActionDeleteFailedDesc -> stringResource(Res.string.notification_action_delete_failed_desc, *values)
 
             // Cache Notifications
             PlatformString.NotifCacheCleanedTitle -> stringResource(Res.string.notification_cache_cleaned_title, *values)
             PlatformString.NotifCacheCleanedDesc -> stringResource(Res.string.notification_cache_cleaned_desc, *values)
             PlatformString.NotifCacheCleanFailedTitle -> stringResource(Res.string.notification_cache_clean_failed_title, *values)
             PlatformString.NotifCacheCleanFailedDesc -> stringResource(Res.string.notification_cache_clean_failed_desc, *values)
+
+            // Appearance settings
+            PlatformString.SettingsAppearanceTitle -> stringResource(Res.string.settings_appearance_title, *values)
+            PlatformString.SettingsAppearanceDescription -> stringResource(Res.string.settings_appearance_description, *values)
+            PlatformString.SettingsShowDescriptionsLabel -> stringResource(Res.string.settings_show_descriptions_label, *values)
+
+            // Actions group
+            PlatformString.ActionGroupFavorite -> stringResource(Res.string.action_group_favorite, *values)
+            PlatformString.ActionGroupCustom -> stringResource(Res.string.action_group_custom, *values)
+            PlatformString.ActionGroupDefault -> stringResource(Res.string.action_group_default, *values)
         }
     }
 }

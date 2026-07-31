@@ -9,6 +9,8 @@ package com.keygenqt.vibe.action.models
  */
 data class SettingsStatusModel(
     val actionsCount: Int,
+    val actionsDefaultCount: Int,
+    val actionsCustomCount: Int,
     val cliVersion: String,
     val configVersion: String,
     val actionsPath: String,

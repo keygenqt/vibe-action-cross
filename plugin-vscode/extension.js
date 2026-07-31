@@ -141,7 +141,32 @@ function activate(context) {
       })
 
       const handlers = {
+        loadPreference: (key) => {
+          // VS Code returns undefined if the key doesn't exist.
+          // We return null to map correctly to Kotlin's String?
+          const val = context.globalState.get(key)
+          return val === undefined ? null : val
+        },
+        savePreference: (key, value) => {
+          return context.globalState.update(key, value)
+        },
+        writeFile: (p, content) => {
+          try {
+            fs.writeFileSync(p, content, 'utf8')
+            return true
+          } catch (e) {
+            return false
+          }
+        },
         fileExists: (p) => fs.existsSync(p),
+        deleteFile: (p) => {
+          try {
+            fs.unlinkSync(p)
+            return true
+          } catch (e) {
+            return false
+          }
+        },
         getClipboardText: () => vscode.env.clipboard.readText(),
         setClipboardText: (text) => vscode.env.clipboard.writeText(text),
         getSelectedText: () => {

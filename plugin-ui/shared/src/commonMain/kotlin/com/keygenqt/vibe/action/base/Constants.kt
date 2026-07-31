@@ -10,4 +10,28 @@ package com.keygenqt.vibe.action.base
 object Constants {
     const val VERSION = "0.1.1"
     const val AUTHOR = "keygenqt"
+
+    val ACTION_TEMPLATE = """
+        name: {name}
+        about: Short description
+        # notify: true
+
+        # args:
+        #   - name: input
+        #     short: i
+        #     input: string
+        #     help: Input text
+        #     default: 'default'
+
+        api:
+          output: dialog  # replace | clipboard | dialog
+          # args:
+          #   input: selection
+
+        actions:
+          - tag: tag_step1
+            run: value  # cmd | value | tiny | small | medium | large | vision
+            expect: string  # string | list
+            action: Hello, World!
+    """.trimIndent()
 }

@@ -49,6 +49,10 @@ class PluginResBridge : ResBridge {
             // Actions screen
             PlatformString.MainTitle -> "main.title"
 
+            // Action delete dialog
+            PlatformString.DeleteActionTitle -> "action.delete.title"
+            PlatformString.DeleteActionMessage -> "action.delete.message"
+
             // About screen
             PlatformString.AboutTitle -> "about.title"
             PlatformString.AboutDescription1 -> "about.description1"
@@ -79,12 +83,26 @@ class PluginResBridge : ResBridge {
             PlatformString.NotifActionCancelledDesc -> "notif.action.cancelled.desc"
             PlatformString.NotifActionFailedTitle -> "notif.action.failed.title"
             PlatformString.NotifActionFailedDesc -> "notif.action.failed.desc"
+            PlatformString.NotifActionDeleteSuccessTitle -> "notif.action.delete.success.title"
+            PlatformString.NotifActionDeleteSuccessDesc -> "notif.action.delete.success.desc"
+            PlatformString.NotifActionDeleteFailedTitle -> "notif.action.delete.failed.title"
+            PlatformString.NotifActionDeleteFailedDesc -> "notif.action.delete.failed.desc"
 
             // Cache Notifications
             PlatformString.NotifCacheCleanedTitle -> "notif.cache.cleaned.title"
             PlatformString.NotifCacheCleanedDesc -> "notif.cache.cleaned.desc"
             PlatformString.NotifCacheCleanFailedTitle -> "notif.cache.clean.failed.title"
             PlatformString.NotifCacheCleanFailedDesc -> "notif.cache.clean.failed.desc"
+
+            // Appearance Settings
+            PlatformString.SettingsAppearanceTitle -> "settings.appearance.title"
+            PlatformString.SettingsAppearanceDescription -> "settings.appearance.description"
+            PlatformString.SettingsShowDescriptionsLabel -> "settings.show.descriptions.label"
+
+            // Actions Group
+            PlatformString.ActionGroupFavorite -> "action.group.favorite"
+            PlatformString.ActionGroupCustom -> "action.group.custom"
+            PlatformString.ActionGroupDefault -> "action.group.default"
         }
         MessageBundle.message(bundleKey, *params)
     }

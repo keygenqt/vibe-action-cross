@@ -6,6 +6,7 @@ package com.keygenqt.vibe.action.view.main.components
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
@@ -16,8 +17,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.keygenqt.vibe.action.bridge.ViewEnvironment
-import com.keygenqt.vibe.action.resources.PlatformString
 
 /**
  * Top-right action bar icons: jump to History, About, and Settings.
@@ -26,10 +25,45 @@ import com.keygenqt.vibe.action.resources.PlatformString
 fun MainHeaderActions(
     onNavigateToAbout: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onCreate: () -> Unit,
     onRefresh: () -> Unit,
     isRefreshing: Boolean,
 ) {
-    val env = ViewEnvironment.current
+    IconButton(
+        onClick = onCreate,
+        modifier = Modifier.size(24.dp),
+        enabled = !isRefreshing,
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+        )
+    }
+
+    IconButton(
+        onClick = onNavigateToSettings,
+        modifier = Modifier.size(24.dp),
+        enabled = !isRefreshing,
+    ) {
+        Icon(
+            imageVector = Icons.Default.Settings,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+        )
+    }
+
+    IconButton(
+        onClick = onNavigateToAbout,
+        modifier = Modifier.size(24.dp),
+        enabled = !isRefreshing,
+    ) {
+        Icon(
+            imageVector = Icons.Default.Info,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+        )
+    }
 
     IconButton(
         onClick = onRefresh,
@@ -45,33 +79,9 @@ fun MainHeaderActions(
         } else {
             Icon(
                 imageVector = Icons.Default.Refresh,
-                contentDescription = env.bridge.res.string(PlatformString.CommonRefresh),
+                contentDescription = null,
                 modifier = Modifier.size(16.dp),
             )
         }
-    }
-
-    IconButton(
-        onClick = onNavigateToAbout,
-        modifier = Modifier.size(24.dp),
-        enabled = !isRefreshing,
-    ) {
-        Icon(
-            imageVector = Icons.Default.Info,
-            contentDescription = env.bridge.res.string(PlatformString.AboutTitle),
-            modifier = Modifier.size(16.dp),
-        )
-    }
-
-    IconButton(
-        onClick = onNavigateToSettings,
-        modifier = Modifier.size(24.dp),
-        enabled = !isRefreshing,
-    ) {
-        Icon(
-            imageVector = Icons.Default.Settings,
-            contentDescription = env.bridge.res.string(PlatformString.SettingsTitle),
-            modifier = Modifier.size(16.dp),
-        )
     }
 }

@@ -36,10 +36,17 @@ fun StatusSection(
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                 .padding(16.dp),
         ) {
-            SettingsStatusRow(
-                label = env.bridge.res.string(PlatformString.SettingsStatusActionsLabel),
-                value = status?.actionsCount?.toString() ?: "-",
-            )
+            if (status?.actionsCustomCount == null || status.actionsCustomCount == 0) {
+                SettingsStatusRow(
+                    label = env.bridge.res.string(PlatformString.SettingsStatusActionsLabel),
+                    value = status?.actionsCount?.toString() ?: "-",
+                )
+            } else {
+                SettingsStatusRow(
+                    label = env.bridge.res.string(PlatformString.SettingsStatusActionsLabel),
+                    value = "${status.actionsCount} (${status.actionsDefaultCount}/${status.actionsCustomCount})",
+                )
+            }
             SettingsStatusRow(
                 label = env.bridge.res.string(PlatformString.SettingsStatusVersionLabel),
                 value = status?.cliVersion ?: "-",

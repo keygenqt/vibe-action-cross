@@ -14,6 +14,12 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+tasks {
+    buildPlugin {
+        archiveBaseName.set("vibe-action-plugin")
+    }
+}
+
 dependencies {
     testImplementation(libs.junit)
 

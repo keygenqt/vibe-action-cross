@@ -39,6 +39,16 @@ data class NotificationModel(
             message = NotificationItem(PlatformString.NotifActionFailedDesc, listOf(name)),
         )
 
+        fun actionDeleteSuccess(name: String) = NotificationModel(
+            title = NotificationItem(PlatformString.NotifActionDeleteSuccessTitle),
+            message = NotificationItem(PlatformString.NotifActionDeleteSuccessDesc, listOf(name)),
+        )
+
+        fun actionDeleteFailed(name: String) = NotificationModel(
+            title = NotificationItem(PlatformString.NotifActionDeleteFailedTitle),
+            message = NotificationItem(PlatformString.NotifActionDeleteFailedDesc, listOf(name)),
+        )
+
         fun cacheCleaned() = NotificationModel(
             title = NotificationItem(PlatformString.NotifCacheCleanedTitle),
             message = NotificationItem(PlatformString.NotifCacheCleanedDesc),

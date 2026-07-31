@@ -7,7 +7,6 @@ package com.keygenqt.vibe.action.command
 import co.touchlab.kermit.Logger
 import com.keygenqt.vibe.action.bridge.Environment
 import com.keygenqt.vibe.action.models.ActionModel
-import com.keygenqt.vibe.action.models.builtInActionIds
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -36,12 +35,11 @@ class ActionRepository(
         val models = actionOutputs.filterIsInstance<CommandOutput.Actions>()
             .filter { it.api != null }
             .map { out ->
-                val isCustom = out.name !in builtInActionIds
                 ActionModel(
                     id = out.name,
                     name = out.name.replaceFirstChar { it.uppercase() },
                     description = out.about,
-                    isCustom = isCustom,
+                    isCustom = out.isCustom,
                     args = out.args,
                     api = out.api!!,
                     yamlPath = null,

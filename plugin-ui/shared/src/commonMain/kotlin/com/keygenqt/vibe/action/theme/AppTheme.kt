@@ -19,6 +19,14 @@ import androidx.compose.ui.graphics.Color
 @Composable
 expect fun platformColorScheme(): ColorScheme
 
+/**
+ * Custom application colors used outside the standard Material theme.
+ */
+object ColorsApp {
+    val accent: Color = Color(0xFF14B8A6)
+    val starActive: Color = Color(0xFFFFB300)
+}
+
 val LightColorScheme = lightColorScheme(
     primary = Color(0xFF007ACC),
     onPrimary = Color(0xFFFFFFFF),

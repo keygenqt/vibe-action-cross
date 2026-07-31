@@ -17,6 +17,7 @@ import com.keygenqt.vibe.action.components.LoadingLottieAnimation
 import com.keygenqt.vibe.action.components.NotificationHandler
 import com.keygenqt.vibe.action.components.ScreenScaffold
 import com.keygenqt.vibe.action.resources.PlatformString
+import com.keygenqt.vibe.action.view.settings.components.AppearanceSection
 import com.keygenqt.vibe.action.view.settings.components.CacheSection
 import com.keygenqt.vibe.action.view.settings.components.ConfigSection
 import com.keygenqt.vibe.action.view.settings.components.StatusSection
@@ -35,6 +36,7 @@ fun SettingsView(
     val status by viewModel.status.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val notification by viewModel.notification.collectAsState()
+    val showDescriptions by viewModel.showDescriptions.collectAsState()
 
     NotificationHandler(
         notification = notification,
@@ -44,8 +46,9 @@ fun SettingsView(
     ScreenScaffold(
         title = env.bridge.res.string(PlatformString.SettingsTitle),
         onBack = onBack,
+        scrollable = !(isLoading || showDescriptions == null),
     ) {
-        if (isLoading) {
+        if (isLoading || showDescriptions == null) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
@@ -58,6 +61,14 @@ fun SettingsView(
                     .fillMaxSize()
                     .padding(20.dp),
             ) {
+                AppearanceSection(
+                    showDescriptions = showDescriptions!!,
+                    onToggleShowDescriptions = viewModel::toggleShowDescriptions,
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+                HorizontalDivider(modifier = Modifier.padding(bottom = 16.dp))
+
                 ConfigSection(
                     onOpenConfig = viewModel::openConfigFile,
                     isConfigAvailable = status != null,

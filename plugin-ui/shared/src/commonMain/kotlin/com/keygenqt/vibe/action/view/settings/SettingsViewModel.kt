@@ -8,15 +8,19 @@ import co.touchlab.kermit.Logger
 import com.keygenqt.vibe.action.base.AppEvent
 import com.keygenqt.vibe.action.base.BaseViewModel
 import com.keygenqt.vibe.action.base.EventBus
+import com.keygenqt.vibe.action.base.PreferenceKey
 import com.keygenqt.vibe.action.bridge.Environment
+import com.keygenqt.vibe.action.bridge.Platform
 import com.keygenqt.vibe.action.bridge.PlatformView
 import com.keygenqt.vibe.action.command.ToolingRepository
 import com.keygenqt.vibe.action.models.NotificationModel
 import com.keygenqt.vibe.action.models.SettingsStatusModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * ViewModel for the settings screen.
@@ -48,8 +52,16 @@ class SettingsViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    /**
+     * Holds the UI preference for whether to show action descriptions.
+     * Defaults to true if no saved preference is found.
+     */
+    private val _showDescriptions = MutableStateFlow<Boolean?>(null)
+    val showDescriptions: StateFlow<Boolean?> = _showDescriptions.asStateFlow()
+
     init {
         loadData()
+        loadPreferences()
     }
 
     /**
@@ -64,6 +76,8 @@ class SettingsViewModel(
                 if (config != null) {
                     _status.value = SettingsStatusModel(
                         actionsCount = config.actions,
+                        actionsDefaultCount = config.actionsDefault,
+                        actionsCustomCount = config.actionsCustom,
                         cliVersion = config.version,
                         configVersion = config.config,
                         actionsPath = config.actionsPath,
@@ -74,6 +88,33 @@ class SettingsViewModel(
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    /**
+     * Loads the 'show descriptions' preference from the host's persistent storage.
+     */
+    private fun loadPreferences() {
+        viewModelScope.launch {
+            if (env.platform == Platform.VSExtension) {
+                delay(1000.milliseconds)
+            }
+            val str = env.bridge.sys.loadPreference?.invoke(PreferenceKey.ShowDescriptions.name)
+            _showDescriptions.value = str?.toBoolean() ?: true
+        }
+    }
+
+    /**
+     * Toggles the 'show descriptions' state and saves the new value to persistent storage.
+     */
+    fun toggleShowDescriptions() {
+        val current = _showDescriptions.value ?: return
+        val newValue = !current
+        _showDescriptions.value = newValue
+        env.bridge.sys.savePreference?.invoke(PreferenceKey.ShowDescriptions.name, newValue.toString())
+        // Notify other ViewModels
+        viewModelScope.launch {
+            eventBus.emit(AppEvent.DescriptionsVisibilityChanged)
         }
     }
 

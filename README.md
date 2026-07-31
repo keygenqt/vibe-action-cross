@@ -41,3 +41,52 @@ for the architectural writeup this project builds on.
 ```bash
 ./gradlew :plugin-ui:webApp:launchVscode
 ```
+
+## Build IDEA
+
+```bash
+./gradlew :plugin-idea:buildPlugin
+```
+
+The built plugin artifact (`.zip` or `.jar`) will be placed in `plugin-idea/build/distributions/`.
+
+## Build VSCode
+
+```bash
+./gradlew buildExtension
+```
+
+The built extension artifact (`.vsix`) will be placed in the `dist/` directory.
+
+## Build All
+
+```bash
+./gradlew buildAll
+```
+
+Gathers all build artifacts (both IntelliJ and VS Code) into the root `dist/` directory.
+
+## Installation
+
+### VS Code Extension
+
+1. Open VS Code.
+2. Go to the Extensions view (`Cmd+Shift+X` or `Ctrl+Shift+X`).
+3. Click the `...` menu in the top-right corner of the Extensions panel.
+4. Select **Installation from VSIX...**.
+5. Navigate to the `dist/` directory and select `vibe-action-0.0.1.vsix`.
+6. Reload VS Code when prompted.
+
+Alternatively, install via CLI:
+```bash
+code --install-extension dist/vibe-action-0.0.1.vsix
+```
+
+### IntelliJ Platform Plugin
+
+1. Open IntelliJ IDEA.
+2. Go to `Settings/Preferences` -> `Plugins`.
+3. Click the gear icon (`⚙️`) in the top-right corner of the Plugins window.
+4. Select **Install Plugin from Disk...**.
+5. Navigate to the `dist/` directory and select `vibe-action-plugin-0.0.1.zip`.
+6. Restart IntelliJ IDEA when prompted.

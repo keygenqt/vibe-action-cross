@@ -14,6 +14,10 @@ enum class PlatformString {
     // Actions screen
     MainTitle,
 
+    // Action delete dialog
+    DeleteActionTitle,
+    DeleteActionMessage,
+
     // About screen
     AboutTitle,
     AboutDescription1,
@@ -31,6 +35,16 @@ enum class PlatformString {
     SettingsStatusVersionLabel,
     SettingsStatusConfigLabel,
 
+    // Appearance settings
+    SettingsAppearanceTitle,
+    SettingsAppearanceDescription,
+    SettingsShowDescriptionsLabel,
+
+    // Actions group
+    ActionGroupFavorite,
+    ActionGroupCustom,
+    ActionGroupDefault,
+
     // Common
     CommonRefresh,
 
@@ -44,6 +58,10 @@ enum class PlatformString {
     NotifActionFailedDesc,
     NotifLoadErrorTitle,
     NotifLoadErrorDesc,
+    NotifActionDeleteSuccessTitle,
+    NotifActionDeleteSuccessDesc,
+    NotifActionDeleteFailedTitle,
+    NotifActionDeleteFailedDesc,
 
     // Cache notifications – title and description keys
     NotifCacheCleanedTitle,

@@ -122,11 +122,49 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     }
 
     /**
+     * Writes content to a file via bridge API.
+     */
+    override val writeFile: (suspend (String, String) -> Unit) = { path, content ->
+        try {
+            withTimeout(FILE_EXISTS_TIMEOUT) {
+                suspendCancellableCoroutine { cont ->
+                    api.send(
+                        target = "writeFile",
+                        args = arrayOf(path, content),
+                    ) { cont.resume(Unit) }
+                }
+            }
+        } catch (_: TimeoutCancellationException) {
+            // Ignore timeout, fire-and-forget behavior is acceptable here
+        }
+    }
+
+    /**
+     * Deletes a file at the given path via bridge API.
+     * Times out if the extension host never responds.
+     */
+    override val deleteFile: (suspend (String) -> Boolean) = { path ->
+        try {
+            withTimeout(FILE_EXISTS_TIMEOUT) {
+                // Reusing the same timeout duration
+                suspendCancellableCoroutine { cont ->
+                    api.send(
+                        target = "deleteFile",
+                        args = arrayOf(path),
+                    ) { result -> cont.resume(result as? Boolean ?: false) }
+                }
+            }
+        } catch (_: TimeoutCancellationException) {
+            false
+        }
+    }
+
+    /**
      * Checks if a file exists at the given path via bridge API.
      * Times out if the extension host never responds (its callback would
      * otherwise leak in VsCodeApi's pending map forever).
      */
-    override val fileExists: (suspend (String) -> Boolean)? = { path ->
+    override val fileExists: (suspend (String) -> Boolean) = { path ->
         try {
             withTimeout(FILE_EXISTS_TIMEOUT) {
                 suspendCancellableCoroutine { cont ->
@@ -136,7 +174,7 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
                     ) { result -> cont.resume(result as? Boolean ?: false) }
                 }
             }
-        } catch (e: TimeoutCancellationException) {
+        } catch (_: TimeoutCancellationException) {
             // The orphaned callback remains in VsCodeApi until (if ever) the host
             // responds — acceptable, the watchdog in VsCodeApi will report a leak.
             false
@@ -180,6 +218,32 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
      */
     override val showTextDialog: ((title: String, text: String) -> Unit) = { title, text ->
         api.send("showTextDialog", arrayOf(title, text))
+    }
+
+    /**
+     * Saves a simple string preference to VS Code globalState via bridge API.
+     */
+    override val savePreference: ((String, String) -> Unit) = { key, value ->
+        api.send("savePreference", arrayOf(key, value))
+    }
+
+    /**
+     * Loads a simple string preference from VS Code globalState via bridge API.
+     * Times out if the extension host never responds.
+     */
+    override val loadPreference: (suspend (String) -> String?) = { key ->
+        try {
+            withTimeout(FILE_EXISTS_TIMEOUT) {
+                suspendCancellableCoroutine { cont ->
+                    api.send(
+                        target = "loadPreference",
+                        args = arrayOf(key),
+                    ) { result -> cont.resume(result as? String) }
+                }
+            }
+        } catch (_: TimeoutCancellationException) {
+            null
+        }
     }
 
     private companion object {
