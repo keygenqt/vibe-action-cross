@@ -37,7 +37,10 @@ class ActionRepository(
             .map { out ->
                 ActionModel(
                     id = out.name,
-                    name = out.name.replaceFirstChar { it.uppercase() },
+                    name = out.name
+                        .replace("-", " ")
+                        .replace("_", " ")
+                        .replaceFirstChar { it.uppercase() },
                     description = out.about,
                     isCustom = out.isCustom,
                     args = out.args,

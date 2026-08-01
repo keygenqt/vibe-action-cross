@@ -8,8 +8,8 @@ package com.keygenqt.vibe.action.base
  * Shared build/version metadata, referenced across views (e.g. About screen).
  */
 object Constants {
-    const val VERSION = "0.1.1"
-    const val AUTHOR = "keygenqt"
+    const val VERSION = "0.0.1"
+    const val AUTHOR = "Vitaliy Zarubin (keygenqt)"
 
     val ACTION_TEMPLATE = """
         name: {name}
