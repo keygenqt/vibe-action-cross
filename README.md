@@ -28,6 +28,10 @@ Platform-specific behavior (process execution, native dialogs, resources) goes t
 branching in shared code. See [`cmp-ide-cross`](https://gitcode.com/keygenqt_vz/cmp-ide-cross)
 for the architectural writeup this project builds on.
 
+## Preview
+
+![preview.png](data/preview.png)
+
 ## Running the Apps
 
 ### IntelliJ Platform Plugin
