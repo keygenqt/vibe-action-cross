@@ -1,6 +1,6 @@
 # Vibe Action Cross
 
-![preview.png](data/preview.png)
+![preview.png](data/preview1.png)
 
 IDE integration for [Vibe Action](https://vibe-action.keygenqt.com/) — a single Compose Multiplatform UI,
 shipped natively as both an IntelliJ Platform plugin and a VS Code extension.
@@ -32,7 +32,7 @@ for the architectural writeup this project builds on.
 
 ## Example
 
-![idea.png](data/idea.png)
+![idea.png](data/preview2.png)
 
 ## Running the Apps
 
