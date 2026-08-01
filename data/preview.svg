@@ -1,0 +1,70 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#8B8F94" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="630" fill="#0B0D10"/>
+
+  <line x1="64" y1="56" x2="64" y2="574" stroke="#262A2F" stroke-width="1" opacity="0.6"/>
+  <g font-family="JetBrains Mono" font-size="12" fill="#8B8F94" opacity="0.22" text-anchor="end">
+    <text x="48" y="90">01</text>
+    <text x="48" y="124">02</text>
+    <text x="48" y="158">03</text>
+    <text x="48" y="192">04</text>
+    <text x="48" y="226">05</text>
+    <text x="48" y="260">06</text>
+    <text x="48" y="294">07</text>
+    <text x="48" y="328">08</text>
+    <text x="48" y="362">09</text>
+    <text x="48" y="396">10</text>
+    <text x="48" y="430">11</text>
+    <text x="48" y="464">12</text>
+    <text x="48" y="498">13</text>
+    <text x="48" y="532">14</text>
+  </g>
+
+  <rect x="140" y="54" width="44" height="44" rx="10" fill="#14B8A6"/>
+  <path d="M164 60 L150 79 L159 79 L155 92 L173 71 L163 71 Z" fill="#F3F1EB"/>
+
+  <text x="200" y="84" font-family="JetBrains Mono" font-weight="700" font-size="24" letter-spacing="4" fill="#F3F1EB">VIBE ACTION</text>
+  <text x="1136" y="84" text-anchor="end" font-family="JetBrains Mono" font-size="15" fill="#8B8F94">IntelliJ IDEA &#183; VS Code</text>
+
+  <line x1="140" y1="124" x2="1136" y2="124" stroke="#262A2F" stroke-width="1" opacity="0.7"/>
+
+  <text x="140" y="222" font-family="Space Grotesk" font-weight="700" font-size="56" fill="#F3F1EB">Turn a selection into</text>
+  <text x="140" y="286" font-family="Space Grotesk" font-weight="700" font-size="56" fill="#F3F1EB">a running <tspan fill="#C4572E">pipeline.</tspan></text>
+
+  <text x="140" y="332" font-family="Inter" font-size="22" fill="#8B8F94">Select code. Run shell + AI steps in one YAML pipeline.</text>
+
+  <g>
+    <rect x="140" y="392" width="180" height="76" rx="10" fill="#14171B" stroke="#14B8A6" stroke-width="1.5"/>
+    <text x="158" y="420" font-family="JetBrains Mono" font-size="12" fill="#14B8A6">01</text>
+    <text x="230" y="438" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="16" fill="#F3F1EB">selection</text>
+  </g>
+  <line x1="320" y1="430" x2="364" y2="430" stroke="#8B8F94" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="364" y="392" width="180" height="76" rx="10" fill="#14171B" stroke="#262A2F" stroke-width="1"/>
+    <text x="382" y="420" font-family="JetBrains Mono" font-size="12" fill="#8B8F94">02</text>
+    <text x="454" y="438" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="16" fill="#F3F1EB">shell</text>
+  </g>
+  <line x1="544" y1="430" x2="588" y2="430" stroke="#8B8F94" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="588" y="392" width="180" height="76" rx="10" fill="#14171B" stroke="#262A2F" stroke-width="1"/>
+    <text x="606" y="420" font-family="JetBrains Mono" font-size="12" fill="#8B8F94">03</text>
+    <text x="678" y="438" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="16" fill="#F3F1EB">llm</text>
+  </g>
+  <line x1="768" y1="430" x2="812" y2="430" stroke="#8B8F94" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="812" y="392" width="180" height="76" rx="10" fill="#14171B" stroke="#C4572E" stroke-width="1.5"/>
+    <text x="830" y="420" font-family="JetBrains Mono" font-size="12" fill="#C4572E">04</text>
+    <text x="902" y="438" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="16" fill="#F3F1EB">replace / copy</text>
+  </g>
+
+  <line x1="140" y1="560" x2="1136" y2="560" stroke="#262A2F" stroke-width="1" opacity="0.7"/>
+  <text x="140" y="594" font-family="JetBrains Mono" font-size="15" fill="#8B8F94">Rust core &#160;&#183;&#160; Compose Multiplatform UI</text>
+</svg>

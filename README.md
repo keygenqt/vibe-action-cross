@@ -1,5 +1,7 @@
 # Vibe Action Cross
 
+![preview.png](data/preview.png)
+
 IDE integration for [Vibe Action](https://vibe-action.keygenqt.com/) — a single Compose Multiplatform UI,
 shipped natively as both an IntelliJ Platform plugin and a VS Code extension.
 
@@ -28,9 +30,9 @@ Platform-specific behavior (process execution, native dialogs, resources) goes t
 branching in shared code. See [`cmp-ide-cross`](https://gitcode.com/keygenqt_vz/cmp-ide-cross)
 for the architectural writeup this project builds on.
 
-## Preview
+## Example
 
-![preview.png](data/preview.png)
+![idea.png](data/idea.png)
 
 ## Running the Apps
 
