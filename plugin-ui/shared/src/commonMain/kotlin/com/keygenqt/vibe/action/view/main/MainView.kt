@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.keygenqt.vibe.action.bridge.ViewEnvironment
+import com.keygenqt.vibe.action.components.ErrorStateView
 import com.keygenqt.vibe.action.components.LoadingLottieAnimation
 import com.keygenqt.vibe.action.components.NotificationHandler
 import com.keygenqt.vibe.action.components.ScreenScaffold
@@ -44,6 +45,7 @@ fun MainView(
     val notification by viewModel.notification.collectAsState()
     val showDescriptions by viewModel.showDescriptions.collectAsState()
     val actionToDelete by viewModel.actionToDelete.collectAsState()
+    val errorLoad by viewModel.errorLoad.collectAsState()
 
     NotificationHandler(
         notification = notification,
@@ -57,7 +59,7 @@ fun MainView(
     )
 
     ScreenScaffold(
-        scrollable = !isLoading,
+        scrollable = !isLoading && !errorLoad,
         title = env.bridge.res.string(PlatformString.MainTitle),
         titleIcon = {
             Icon(
@@ -85,18 +87,22 @@ fun MainView(
                 LoadingLottieAnimation(modifier = Modifier.fillMaxSize())
             }
         } else {
-            ActionsList(
-                actions = actions,
-                expandedActionId = expandedActionId,
-                runningActionId = runningActionId,
-                showDescriptions = showDescriptions,
-                onToggleExpanded = viewModel::toggleExpanded,
-                onRun = viewModel::runAction,
-                onEdit = viewModel::editAction,
-                onCancel = viewModel::cancelAction,
-                onDelete = viewModel::requestDeleteAction,
-                onToggleStar = viewModel::onToggleStar,
-            )
+            if (errorLoad) {
+                ErrorStateView()
+            } else {
+                ActionsList(
+                    actions = actions,
+                    expandedActionId = expandedActionId,
+                    runningActionId = runningActionId,
+                    showDescriptions = showDescriptions,
+                    onToggleExpanded = viewModel::toggleExpanded,
+                    onRun = viewModel::runAction,
+                    onEdit = viewModel::editAction,
+                    onCancel = viewModel::cancelAction,
+                    onDelete = viewModel::requestDeleteAction,
+                    onToggleStar = viewModel::onToggleStar,
+                )
+            }
         }
     }
 }

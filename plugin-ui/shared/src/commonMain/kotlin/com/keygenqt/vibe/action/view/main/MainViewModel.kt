@@ -110,6 +110,12 @@ class MainViewModel(
     val actionToDelete = _actionToDelete.asStateFlow()
 
     /**
+     * Tracks error loading state for data.
+     */
+    private val _errorLoad = MutableStateFlow(false)
+    val errorLoad: StateFlow<Boolean> = _errorLoad.asStateFlow()
+
+    /**
      * Serializes loadData() calls — init and refresh() must not overlap.
      */
     private val loadMutex = Mutex()
@@ -190,6 +196,7 @@ class MainViewModel(
     private fun loadData(showLoader: Boolean) {
         loadJob = viewModelScope.launch {
             loadMutex.withLock {
+                _errorLoad.value = false
                 if (showLoader) {
                     _isLoading.value = true
                     delay(1000.milliseconds)
@@ -200,6 +207,7 @@ class MainViewModel(
                     throw e
                 } catch (e: Exception) {
                     logger.e(e) { "Load error" }
+                    _errorLoad.value = true
                     _notification.value = NotificationModel.loadError(e.message ?: "Unknown error")
                 } finally {
                     _isLoading.value = false

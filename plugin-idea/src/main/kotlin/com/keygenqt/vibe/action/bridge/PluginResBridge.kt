@@ -72,6 +72,7 @@ class PluginResBridge : ResBridge {
 
             // Common
             PlatformString.CommonRefresh -> "common.refresh"
+            PlatformString.CommonErrorLoad -> "common.error.load"
 
             // Action notifications
             PlatformString.NotifLoadErrorTitle -> "notif.load.error.title"

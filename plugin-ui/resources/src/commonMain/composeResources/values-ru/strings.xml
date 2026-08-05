@@ -28,6 +28,7 @@
 
     <!-- Common -->
     <string name="common_refresh">Обновить</string>
+    <string name="common_error_load">Что-то пошло не так.\nПожалуйста, проверьте установку приложения vibe-action.</string>
 
     <!-- Notifications -->
     <string name="notification_load_error_title">Ошибка загрузки</string>

@@ -30,9 +30,9 @@ Platform-specific behavior (process execution, native dialogs, resources) goes t
 branching in shared code. See [`cmp-ide-cross`](https://gitcode.com/keygenqt_vz/cmp-ide-cross)
 for the architectural writeup this project builds on.
 
-## Example
+## Preview
 
-![idea.png](data/preview2.png)
+![preview.png](data/preview.png)
 
 ## Running the Apps
 
@@ -80,12 +80,12 @@ Gathers all build artifacts (both IntelliJ and VS Code) into the root `dist/` di
 2. Go to the Extensions view (`Cmd+Shift+X` or `Ctrl+Shift+X`).
 3. Click the `...` menu in the top-right corner of the Extensions panel.
 4. Select **Installation from VSIX...**.
-5. Navigate to the `dist/` directory and select `vibe-action-0.0.1.vsix`.
+5. Navigate to the `dist/` directory and select `vibe-action-0.0.2.vsix`.
 6. Reload VS Code when prompted.
 
 Alternatively, install via CLI:
 ```bash
-code --install-extension dist/vibe-action-0.0.1.vsix
+code --install-extension dist/vibe-action-0.0.2.vsix
 ```
 
 ### IntelliJ Platform Plugin
@@ -94,5 +94,5 @@ code --install-extension dist/vibe-action-0.0.1.vsix
 2. Go to `Settings/Preferences` -> `Plugins`.
 3. Click the gear icon (`⚙️`) in the top-right corner of the Plugins window.
 4. Select **Install Plugin from Disk...**.
-5. Navigate to the `dist/` directory and select `vibe-action-plugin-0.0.1.zip`.
+5. Navigate to the `dist/` directory and select `vibe-action-plugin-0.0.2.zip`.
 6. Restart IntelliJ IDEA when prompted.

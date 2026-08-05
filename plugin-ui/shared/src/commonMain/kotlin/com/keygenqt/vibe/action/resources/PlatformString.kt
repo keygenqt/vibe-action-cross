@@ -47,6 +47,7 @@ enum class PlatformString {
 
     // Common
     CommonRefresh,
+    CommonErrorLoad,
 
     // Action notifications – title and description keys
     NotifActionCompletedTitle,
