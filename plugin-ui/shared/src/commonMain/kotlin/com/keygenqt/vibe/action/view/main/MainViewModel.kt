@@ -270,7 +270,11 @@ class MainViewModel(
                 throw e
             } catch (e: Exception) {
                 if (runSeq == seq) {
-                    _notification.value = NotificationModel.actionFailed(action.name)
+                    if (env.bridge.sys.language == "en" && e.message != null) {
+                        _notification.value = NotificationModel.custom(action.name, e.message!!)
+                    } else {
+                        _notification.value = NotificationModel.actionFailed(action.name)
+                    }
                 } else {
                     logger.w(e) { "Superseded action ${action.name} failed" }
                 }

@@ -22,6 +22,7 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_fa
 import vibe_action_cross.plugin_ui.resources.generated.resources.app_icon
 import vibe_action_cross.plugin_ui.resources.generated.resources.architecture_diagram
 import vibe_action_cross.plugin_ui.resources.generated.resources.common_error_load
+import vibe_action_cross.plugin_ui.resources.generated.resources.common_custom
 import vibe_action_cross.plugin_ui.resources.generated.resources.common_refresh
 import vibe_action_cross.plugin_ui.resources.generated.resources.delete_action_message
 import vibe_action_cross.plugin_ui.resources.generated.resources.delete_action_title
@@ -114,6 +115,7 @@ class ComposeResBridge : ResBridge {
             // Common
             PlatformString.CommonRefresh -> stringResource(Res.string.common_refresh, *values)
             PlatformString.CommonErrorLoad -> stringResource(Res.string.common_error_load, *values)
+            PlatformString.Custom -> stringResource(Res.string.common_custom, *values)
 
             // Action notifications
             PlatformString.NotifLoadErrorTitle -> stringResource(Res.string.notification_load_error_title, *values)

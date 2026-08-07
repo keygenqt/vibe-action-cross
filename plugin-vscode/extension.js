@@ -34,16 +34,21 @@ function handleRunCli(webview, args, requestId) {
   // Guard against double onDone: Node fires both 'error' and 'close'
   // when spawn fails (e.g. ENOENT — CLI not found in PATH).
   let finished = false
-  const done = code => {
+  const done = (code, stdout = '', stderr = '') => {
     if (finished) return
     finished = true
     if (procId != null) cliProcesses.delete(procId)
-    webview.postMessage({ target: doneTarget, args: [code] })
+    webview.postMessage({ target: doneTarget, args: [code, { first: stdout, second: stderr }] })
   }
 
   let buffer = ''
+  let stdoutAccumulator = ''
+  let stderrAccumulator = ''
+
   proc.stdout.on('data', data => {
-    buffer += data.toString()
+    const str = data.toString()
+    buffer += str
+    stdoutAccumulator += str
     const lines = buffer.split(/\r?\n/)
     buffer = lines.pop() || ''
     lines.filter(l => l.trim()).forEach(line => {
@@ -52,12 +57,14 @@ function handleRunCli(webview, args, requestId) {
   })
 
   proc.stderr.on('data', data => {
-    console.error('stderr:', data.toString())
+    const str = data.toString()
+    stderrAccumulator += str
+    console.error('stderr:', str)
   })
 
   proc.on('error', err => {
     console.error('spawn error:', err)
-    done(-1)
+    done(-1, '', err.message)
   })
 
   proc.on('close', code => {
@@ -67,7 +74,7 @@ function handleRunCli(webview, args, requestId) {
       webview.postMessage({ target: eventTarget, args: [tail] })
     }
     // 'close' may fire with null code when the process was killed by a signal
-    done(code == null ? -1 : code)
+    done(code == null ? -1 : code, stdoutAccumulator, stderrAccumulator)
   })
 
   if (requestId != null) {
@@ -123,7 +130,7 @@ function activate(context) {
       const baseUri = webviewView.webview.asWebviewUri(vscode.Uri.file(bundleDir)) + '/'
       webviewView.webview.html = fs
           .readFileSync(file, 'utf8')
-          .replace('<head>', `<head><base href="${baseUri}">`)
+          .replace('<head>', `<head><base href="${baseUri}"><script>window.__vscodeLang = "${(vscode.env.language)}";</script>`)
           .replace(/(href|src)="([^"]+)"/g, (match, attr, rel) => {
             if (/^(https?:|data:|#)/.test(rel)) return match
             const uri = webviewView.webview.asWebviewUri(vscode.Uri.file(path.join(bundleDir, rel)))

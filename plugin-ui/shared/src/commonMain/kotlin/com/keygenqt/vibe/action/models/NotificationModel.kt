@@ -14,6 +14,11 @@ data class NotificationModel(
     val message: NotificationItem,
 ) {
     companion object {
+        fun custom(title: String, message: String) = NotificationModel(
+            title = NotificationItem(PlatformString.Custom, listOf(title)),
+            message = NotificationItem(PlatformString.Custom, listOf(message)),
+        )
+
         fun loadError(message: String) = NotificationModel(
             title = NotificationItem(PlatformString.NotifLoadErrorTitle),
             message = NotificationItem(PlatformString.NotifLoadErrorDesc, listOf(message)),

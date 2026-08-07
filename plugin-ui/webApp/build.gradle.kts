@@ -32,6 +32,37 @@ kotlin {
 }
 
 /**
+ * Finds the VS Code `code` CLI.
+ * Gradle started from IDEA gets a stripped-down PATH, so plain "code" is not found there.
+ */
+fun resolveVscodeBinary(): String {
+    // 1. Explicit overrides
+    providers.gradleProperty("vscodePath").orNull?.let { return it }
+    providers.environmentVariable("VSCODE_BIN").orNull?.let { return it }
+
+    // 2. PATH lookup (works for terminal runs)
+    providers.environmentVariable("PATH").orNull
+        ?.split(File.pathSeparatorChar)
+        ?.map { File(it, "code") }
+        ?.firstOrNull { it.isFile && it.canExecute() }
+        ?.let { return it.absolutePath }
+
+    // 3. Well-known locations
+    listOf(
+        "/usr/local/bin/code",        // macOS: "Install 'code' command in PATH"
+        "/opt/homebrew/bin/code",     // Apple Silicon + Homebrew
+        "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code",
+        "/usr/bin/code",              // Linux
+        "/snap/bin/code",
+    ).map(::File).firstOrNull { it.isFile }?.let { return it.absolutePath }
+
+    error(
+        "VS Code CLI 'code' not found. " +
+                "Pass -PvscodePath=/path/to/code or set the VSCODE_BIN env var."
+    )
+}
+
+/**
  * Copies the webApp JS bundle into plugin-vscode for VS Code extension loading.
  */
 tasks.register<Copy>("copyWebAppBundle") {
@@ -56,7 +87,7 @@ tasks.register<Exec>("launchVscode") {
     dependsOn("copyWebAppBundle")
 
     commandLine(
-        "code",
+        resolveVscodeBinary(),
         "--extensionDevelopmentPath=${dir.resolve("plugin-vscode")}",
         "--new-window"
     )
@@ -88,7 +119,7 @@ tasks.register<Exec>("launchVscodeDev") {
     dependsOn("copyWebAppBundleDev")
 
     commandLine(
-        "code",
+        resolveVscodeBinary(),
         "--extensionDevelopmentPath=${dir.resolve("plugin-vscode")}",
         "--new-window"
     )

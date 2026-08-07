@@ -7,6 +7,7 @@ package com.keygenqt.vibe.action.command
 import co.touchlab.kermit.Logger
 import com.keygenqt.vibe.action.bridge.CliProcess
 import com.keygenqt.vibe.action.bridge.Environment
+import com.keygenqt.vibe.action.command.CommandProvider.Companion.EXIT_SUPERSEDED
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
@@ -47,6 +48,7 @@ class CommandProvider(
      * reports "canceled" rather than "failed".
      */
     suspend fun execute(args: List<String>): List<CommandOutput> {
+        val cmdString = args.ifEmpty { listOf("default") }.joinToString(" ")
         try {
             return withTimeout(CLI_TIMEOUT) {
                 suspendCancellableCoroutine { cont ->
@@ -56,24 +58,41 @@ class CommandProvider(
                             args,
                             { line ->
                                 // Late events may race with cancellation — drop them.
+                                logger.d(line)
                                 if (cont.isActive) result.add(parseCommandOutputLine(line))
                             },
-                            { exitCode ->
+                            { exitCode, streams ->
                                 if (cont.isActive) {
+                                    val (stdout, stderr) = streams
                                     when (exitCode) {
                                         0 -> cont.resume(result.toList())
-                                        EXIT_SUPERSEDED -> cont.resumeWithException(
-                                            CancellationException(
-                                                "Command ${args.ifEmpty { listOf("default") }.joinToString(" ")} " +
-                                                    "was superseded by a newer CLI process",
-                                            ),
-                                        )
-                                        else -> cont.resumeWithException(
-                                            RuntimeException(
-                                                "Command ${args.ifEmpty { listOf("default") }.joinToString(" ")} " +
-                                                    "failed with exit code $exitCode",
-                                            ),
-                                        )
+                                        EXIT_SUPERSEDED -> {
+                                            logger.w("Command '$cmdString' was superseded by a newer CLI process")
+                                            cont.resumeWithException(
+                                                CancellationException(
+                                                    "Command '$cmdString' was superseded by a newer CLI process",
+                                                ),
+                                            )
+                                        }
+
+                                        else -> {
+                                            val message = result.filterIsInstance<CommandOutput.Fallback>()
+                                                .firstOrNull { it.level == "error" }
+                                                ?.value?.get("message")?.toString()
+
+                                            val rawError = stderr.ifBlank { stdout }
+                                            val error = if (rawError.isBlank()) {
+                                                "Command '$cmdString' failed with exit code $exitCode."
+                                            } else {
+                                                """
+                                                |Command '$cmdString' failed with exit code $exitCode.
+                                                |--- output ---
+                                                |$rawError
+                                                """.trimMargin()
+                                            }
+                                            error.trim().lines().filter { it.isNotBlank() }.forEach { logger.e(it) }
+                                            cont.resumeWithException(RuntimeException(message ?: error))
+                                        }
                                     }
                                 }
                             },
@@ -88,6 +107,7 @@ class CommandProvider(
                         // ExecutionException when the CLI binary is not found in PATH).
                         // Resume here — the outer resumeWithException would throw
                         // IllegalStateException on an already-resumed continuation.
+                        logger.e("Failed to start CLI command '$cmdString'", e)
                         if (cont.isActive) cont.resumeWithException(e)
                     }
                 }
@@ -95,9 +115,9 @@ class CommandProvider(
         } catch (e: TimeoutCancellationException) {
             // invokeOnCancellation above has already killed the process —
             // no lingering CLI is left behind.
+            logger.w("Command '$cmdString' timed out after $CLI_TIMEOUT")
             throw RuntimeException(
-                "Command ${args.ifEmpty { listOf("default") }.joinToString(" ")} " +
-                    "timed out after ${CLI_TIMEOUT}s",
+                "Command '$cmdString' timed out after $CLI_TIMEOUT",
                 e,
             )
         }
@@ -127,7 +147,7 @@ class CommandProvider(
     }
 
     private companion object {
-        val CLI_TIMEOUT = 30.seconds
+        val CLI_TIMEOUT = 60.seconds
 
         /**
          * Exit code used by vibe-action's RunGuard when a newer instance

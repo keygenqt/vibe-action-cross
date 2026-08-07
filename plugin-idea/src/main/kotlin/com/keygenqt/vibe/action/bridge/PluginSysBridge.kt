@@ -40,12 +40,19 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.AbstractAction
 import javax.swing.Action
 import javax.swing.JComponent
+import com.intellij.DynamicBundle
 
 /**
  * IntelliJ plugin implementation of the system bridge.
  * Maps notifications and dialogs to native IntelliJ Platform APIs.
  */
 class PluginSysBridge(val project: Project) : SysBridge {
+
+    /**
+     * Locale language code, or null if blank.
+     */
+    override val language: String?
+        get() = DynamicBundle.getLocale().language.takeIf { it.isNotBlank() }
 
     /**
      * Service for managing CLI process lifecycle and communication within the project.
@@ -108,7 +115,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
      * is the fence (a callback racing on the reader thread may still slip
      * through — CommandProvider guards those with isActive).
      */
-    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> CliProcess) =
+    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int, Pair<String, String>) -> Unit) -> CliProcess) =
         { args, onEvent, onDone ->
             val commandLine = if (SystemInfo.isUnix) {
                 val shell = System.getenv("SHELL")?.takeIf { it.isNotBlank() } ?: "/bin/sh"
@@ -139,18 +146,26 @@ class PluginSysBridge(val project: Project) : SysBridge {
             // Local per invocation. Listener events are dispatched sequentially
             // on the process reader thread, so the buffer needs no synchronization.
             val stdoutBuffer = StringBuilder()
+            val outputBuffer = Pair(StringBuilder(), StringBuilder())
 
             handler.addProcessListener(object : ProcessListener {
                 override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
-                    if (outputType != ProcessOutputTypes.STDOUT) return
                     if (finished.get()) return
-                    stdoutBuffer.append(event.text)
-                    var idx = stdoutBuffer.indexOf('\n')
-                    while (idx >= 0) {
-                        val line = stdoutBuffer.substring(0, idx).trimEnd('\r')
-                        stdoutBuffer.delete(0, idx + 1)
-                        if (line.isNotBlank()) onEvent(line)
-                        idx = stdoutBuffer.indexOf('\n')
+                    when (outputType) {
+                        ProcessOutputTypes.STDOUT -> {
+                            stdoutBuffer.append(event.text)
+                            outputBuffer.first.append(event.text)
+                            var idx = stdoutBuffer.indexOf('\n')
+                            while (idx >= 0) {
+                                val line = stdoutBuffer.substring(0, idx).trimEnd('\r')
+                                stdoutBuffer.delete(0, idx + 1)
+                                if (line.isNotBlank()) onEvent(line)
+                                idx = stdoutBuffer.indexOf('\n')
+                            }
+                        }
+                        ProcessOutputTypes.STDERR -> {
+                            outputBuffer.second.append(event.text)
+                        }
                     }
                 }
 
@@ -160,7 +175,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
                     if (!finished.compareAndSet(false, true)) return
                     val tail = stdoutBuffer.toString().trim()
                     if (tail.isNotEmpty()) onEvent(tail)
-                    onDone(event.exitCode)
+                    onDone(event.exitCode, Pair(outputBuffer.first.toString(), outputBuffer.second.toString()))
                 }
             })
             handler.startNotify()

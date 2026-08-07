@@ -16,6 +16,12 @@ class VsCodeApi(private val raw: dynamic) {
     private var nextRequestId = 0
     private val pendingCallbacks = mutableMapOf<Int, (dynamic) -> Unit>()
 
+    /**
+     * Returns current VS Code language.
+     */
+    val language: String?
+        get() = js("window.__vscodeLang") as String?
+
     /** Requests whose callback was never invoked — logged periodically, not on every send. */
     private var lastPendingLogSize = 0
 

@@ -19,12 +19,18 @@ import kotlin.time.Duration.Companion.seconds
 class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
 
     /**
+     * Returns language code from API.
+     */
+    override val language: String?
+        get() = api.language
+
+    /**
      * Callbacks of live CLI invocations, keyed by invocation id.
      * Each runCli call gets a unique id; the extension host tags events with
      * per-invocation targets ("cliEvent:<id>"/"cliDone:<id>"), so events of
      * a superseded process can never reach a newer invocation's callbacks.
      */
-    private val cliCallbacks = mutableMapOf<String, Pair<(String) -> Unit, (Int) -> Unit>>()
+    private val cliCallbacks = mutableMapOf<String, Pair<(String) -> Unit, (Int, Pair<String, String>) -> Unit>>()
     private var cliSeq = 0
 
     init {
@@ -40,7 +46,13 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
                 target.startsWith(CLI_DONE_TARGET) -> {
                     val id = target.removePrefix(CLI_DONE_TARGET)
                     // Remove before notifying — the slot is freed even if onDone throws.
-                    cliCallbacks.remove(id)?.second?.invoke(data.args[0] as Int)
+                    val exitCode = data.args[0] as Int
+                    val streamsDynamic = data.args[1]
+                    val streams = Pair(
+                        streamsDynamic.first as String,
+                        streamsDynamic.second as String
+                    )
+                    cliCallbacks.remove(id)?.second?.invoke(exitCode, streams)
                 }
             }
         })
@@ -95,7 +107,7 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
      * to kill the child process ("killCli"); the resulting late "cliDone:<id>"
      * finds no slot and is ignored.
      */
-    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> CliProcess) =
+    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int, Pair<String, String>) -> Unit) -> CliProcess) =
         { args, onEvent, onDone ->
             val id = (cliSeq++).toString()
             cliCallbacks[id] = onEvent to onDone

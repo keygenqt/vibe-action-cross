@@ -29,6 +29,7 @@
     <!-- Common -->
     <string name="common_refresh">Refresh</string>
     <string name="common_error_load">Something went wrong.\nPlease verify your vibe-action installation.</string>
+    <string name="common_custom">%1$s</string>
 
     <!-- Notifications -->
     <string name="notification_load_error_title">Loading Error</string>

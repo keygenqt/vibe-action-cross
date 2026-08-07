@@ -25,6 +25,11 @@ interface CliProcess {
  */
 interface SysBridge {
     /**
+     * Current UI language code (e.g., "en", "ru") from the host IDE's locale settings.
+     */
+    val language: String?
+
+    /**
      * Dispatches a native toast notification to the active host system.
      */
     val showNotification: ((title: String, message: String) -> Unit)?
@@ -56,7 +61,7 @@ interface SysBridge {
      * process exits. A process terminated because a newer CLI instance
      * superseded it exits with code 130 (see RunGuard::EXIT_SUPERSEDED).
      */
-    val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int) -> Unit) -> CliProcess)?
+    val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int, Pair<String, String>) -> Unit) -> CliProcess)?
 
     /**
      * Opens a file in the platform's native editor/viewer.

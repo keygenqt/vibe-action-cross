@@ -107,6 +107,8 @@ class ActionRepository(
             .filterIsInstance<CommandOutput.Success>()
             .firstOrNull()?.message
 
+        logger.d { "Result action: $newCode" }
+
         if (newCode.isNullOrEmpty()) {
             onEmpty()
         } else {
