@@ -210,6 +210,15 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     }
 
     /**
+     * Prompts the user for text input via a dialog and passes it to the provided handler.
+     */
+    override val getDialogText: (((String?) -> Unit) -> Unit) = { onResult ->
+        api.send("getDialogText", emptyArray()) { res ->
+            onResult(res as String?)
+        }
+    }
+
+    /**
      * Retrieves the current text from the system clipboard via the API.
      */
     override val getClipboardText: (((String?) -> Unit) -> Unit) = { onResult ->

@@ -36,16 +36,31 @@ fun StatusSection(
                 .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                 .padding(16.dp),
         ) {
-            if (status?.actionsCustomCount == null || status.actionsCustomCount == 0) {
-                SettingsStatusRow(
-                    label = env.bridge.res.string(PlatformString.SettingsStatusActionsLabel),
-                    value = status?.actionsCount?.toString() ?: "-",
-                )
-            } else {
-                SettingsStatusRow(
-                    label = env.bridge.res.string(PlatformString.SettingsStatusActionsLabel),
-                    value = "${status.actionsCount} (${status.actionsDefaultCount}/${status.actionsCustomCount})",
-                )
+            when {
+                status == null -> {
+                    SettingsStatusRow(
+                        label = env.bridge.res.string(PlatformString.SettingsStatusActionsLabel),
+                        value = "-",
+                    )
+                }
+                status.customActionsApi != 0 -> {
+                    SettingsStatusRow(
+                        label = env.bridge.res.string(PlatformString.SettingsStatusActionsLabel),
+                        value = "${status.totalActions} (${status.totalActionsApi}/${status.customActionsApi})",
+                    )
+                }
+                status.totalActions == status.totalActionsApi -> {
+                    SettingsStatusRow(
+                        label = env.bridge.res.string(PlatformString.SettingsStatusActionsLabel),
+                        value = "${status.totalActions}",
+                    )
+                }
+                else -> {
+                    SettingsStatusRow(
+                        label = env.bridge.res.string(PlatformString.SettingsStatusActionsLabel),
+                        value = "${status.totalActions} (${status.totalActionsApi})",
+                    )
+                }
             }
             SettingsStatusRow(
                 label = env.bridge.res.string(PlatformString.SettingsStatusVersionLabel),

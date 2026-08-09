@@ -49,11 +49,12 @@ sealed class CommandOutput {
     @Serializable
     @SerialName("status")
     data class Status(
-        val actions: Int,
-        @SerialName("actions_custom")
-        val actionsCustom: Int,
-        @SerialName("actions_default")
-        val actionsDefault: Int,
+        @SerialName("total_actions")
+        val totalActions: Int,
+        @SerialName("total_actions_api")
+        val totalActionsApi: Int,
+        @SerialName("custom_actions_api")
+        val customActionsApi: Int,
         val version: String,
         val config: String,
         @SerialName("actions_path")
@@ -125,6 +126,9 @@ enum class ActionApiSource {
 
     @SerialName("clipboard")
     Clipboard,
+
+    @SerialName("dialog")
+    Dialog,
 }
 
 /**

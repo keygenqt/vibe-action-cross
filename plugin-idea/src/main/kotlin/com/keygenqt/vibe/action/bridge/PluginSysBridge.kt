@@ -252,6 +252,21 @@ class PluginSysBridge(val project: Project) : SysBridge {
     }
 
     /**
+     * Prompts the user for text input via a dialog and passes it to the provided handler.
+     */
+    override val getDialogText: (((String?) -> Unit) -> Unit) = { onResult ->
+        ApplicationManager.getApplication().invokeLater {
+            val text = Messages.showInputDialog(
+                project,
+                MessageBundle.message("dialog.input.message"),
+                MessageBundle.message("dialog.input.title"),
+                Messages.getQuestionIcon()
+            )
+            onResult(text)
+        }
+    }
+
+    /**
      * Writes the given text to the system clipboard.
      */
     override val setClipboardText: ((String) -> Unit) = { newText ->

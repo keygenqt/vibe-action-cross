@@ -98,6 +98,11 @@ interface SysBridge {
     val getClipboardText: (((String?) -> Unit) -> Unit)?
 
     /**
+     * Prompts the user for text input via a dialog and passes it to the provided handler.
+     */
+    val getDialogText: (((String?) -> Unit) -> Unit)?
+
+    /**
      * Writes the given string to the system clipboard.
      */
     val setClipboardText: ((String) -> Unit)?

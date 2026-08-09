@@ -74,6 +74,7 @@ class ActionRepository(
      */
     suspend fun executeAction(
         action: ActionModel,
+        onCancel: () -> Unit,
         onSuccess: () -> Unit,
         onEmpty: () -> Unit,
     ) {
@@ -84,6 +85,7 @@ class ActionRepository(
             val value: String? = when (source) {
                 ActionApiSource.Selection -> getSuspendValue(env.bridge.sys.getSelectedText)
                 ActionApiSource.Clipboard -> getSuspendValue(env.bridge.sys.getClipboardText)
+                ActionApiSource.Dialog -> getSuspendValue(env.bridge.sys.getDialogText)
             }
 
             if (value.isNullOrEmpty()) continue
@@ -101,6 +103,11 @@ class ActionRepository(
                     args.add(value)
                 }
             }
+        }
+
+        if (args.size == 1 && action.api.args.isNotEmpty()) {
+            onCancel.invoke()
+            return
         }
 
         val newCode = commandProvider.execute(args)

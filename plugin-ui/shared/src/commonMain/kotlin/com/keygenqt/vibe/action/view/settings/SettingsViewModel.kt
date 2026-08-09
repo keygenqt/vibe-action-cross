@@ -75,9 +75,9 @@ class SettingsViewModel(
                 logger.d { "Setting status: $config" }
                 if (config != null) {
                     _status.value = SettingsStatusModel(
-                        actionsCount = config.actions,
-                        actionsDefaultCount = config.actionsDefault,
-                        actionsCustomCount = config.actionsCustom,
+                        totalActions = config.totalActions,
+                        totalActionsApi = config.totalActionsApi,
+                        customActionsApi = config.customActionsApi,
                         cliVersion = config.version,
                         configVersion = config.config,
                         actionsPath = config.actionsPath,

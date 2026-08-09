@@ -180,6 +180,10 @@ function activate(context) {
           const editor = vscode.window.activeTextEditor
           return editor ? editor.document.getText(editor.selection) : ""
         },
+        getDialogText: async () => {
+          const result = await vscode.window.showInputBox({})
+          return result === undefined ? null : result
+        },
         showTextDialog: async (title, text) => {
           const safeTitle = title.toLowerCase().replace(/\s+/g, '-')
           const uri = vscode.Uri.parse(`untitled:${safeTitle}.txt`)

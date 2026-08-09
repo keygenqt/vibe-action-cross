@@ -259,6 +259,7 @@ class MainViewModel(
                     action = action,
                     // isActive: a canceled job can still reach these in the
                     // non-suspending tail of executeAction after cancellation.
+                    onCancel = { if (isActive) _notification.value = NotificationModel.actionCancelled(action.name) },
                     onSuccess = { if (isActive) _notification.value = NotificationModel.actionCompleted(action.name) },
                     onEmpty = { if (isActive) _notification.value = NotificationModel.actionEmptyOutput(action.name) },
                 )

@@ -8,9 +8,9 @@ package com.keygenqt.vibe.action.models
  * Snapshot of vibe-action CLI status, shown on the Settings screen.
  */
 data class SettingsStatusModel(
-    val actionsCount: Int,
-    val actionsDefaultCount: Int,
-    val actionsCustomCount: Int,
+    val totalActions: Int,
+    val totalActionsApi: Int,
+    val customActionsApi: Int,
     val cliVersion: String,
     val configVersion: String,
     val actionsPath: String,
