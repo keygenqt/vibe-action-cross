@@ -267,6 +267,35 @@ class PluginSysBridge(val project: Project) : SysBridge {
     }
 
     /**
+     * Retrieves the path of the currently active file in the editor.
+     */
+    override val getCurrentFilePath: (((String?) -> Unit) -> Unit) = { onResult ->
+        ApplicationManager.getApplication().invokeLater {
+            val file = FileEditorManager.getInstance(project).selectedEditor?.file
+            onResult(file?.path)
+        }
+    }
+
+    /**
+     * Retrieves the root path of the current project.
+     */
+    override val getProjectPath: (((String?) -> Unit) -> Unit) = { onResult ->
+        ApplicationManager.getApplication().invokeLater {
+            onResult(project.basePath)
+        }
+    }
+
+    /**
+     * Retrieves the current cursor line number (1-indexed) in the active editor.
+     */
+    override val getCursorLine: (((String?) -> Unit) -> Unit) = { onResult ->
+        ApplicationManager.getApplication().invokeLater {
+            val line = getActiveEditor()?.caretModel?.logicalPosition?.line?.plus(1)?.toString()
+            onResult(line)
+        }
+    }
+
+    /**
      * Writes the given text to the system clipboard.
      */
     override val setClipboardText: ((String) -> Unit) = { newText ->

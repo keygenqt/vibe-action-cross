@@ -53,7 +53,7 @@ class MainViewModel(
     /**
      * Monotonic sequence of runAction invocations. Guards late continuations
      * of a superseded run: unlike _runningActionId, it also distinguishes a
-     * restart of the *same* action (A canceled → A started again), where the
+     * restart of the *same* action (A canceled -> A started again), where the
      * id matches but the old job must stay silent.
      * Mutated only on the viewModelScope dispatcher (Main).
      */
@@ -292,7 +292,7 @@ class MainViewModel(
 
     /**
      * Cancels the currently running action, if any.
-     * The coroutine unwinds → invokeOnCancellation kills the CLI process
+     * The coroutine unwinds -> invokeOnCancellation kills the CLI process
      * via CliProcess.cancel, and the "canceled" notification is posted
      * from runAction's catch (runSeq is unchanged here, so the guard passes).
      */

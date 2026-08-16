@@ -219,6 +219,33 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     }
 
     /**
+     * Retrieves the path of the currently active file in the editor.
+     */
+    override val getCurrentFilePath: (((String?) -> Unit) -> Unit) = { onResult ->
+        api.send("getCurrentFilePath", EMPTY_ARGS) { result ->
+            onResult(result as? String)
+        }
+    }
+
+    /**
+     * Retrieves the root path of the current project/workspace.
+     */
+    override val getProjectPath: (((String?) -> Unit) -> Unit) = { onResult ->
+        api.send("getProjectPath", EMPTY_ARGS) { result ->
+            onResult(result as? String)
+        }
+    }
+
+    /**
+     * Retrieves the current cursor line number (1-indexed) in the active editor.
+     */
+    override val getCursorLine: (((String?) -> Unit) -> Unit) = { onResult ->
+        api.send("getCursorLine", EMPTY_ARGS) { result ->
+            onResult(result as? String)
+        }
+    }
+
+    /**
      * Retrieves the current text from the system clipboard via the API.
      */
     override val getClipboardText: (((String?) -> Unit) -> Unit) = { onResult ->

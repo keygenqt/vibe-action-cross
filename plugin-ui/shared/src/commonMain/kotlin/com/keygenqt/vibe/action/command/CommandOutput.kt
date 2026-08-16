@@ -117,21 +117,6 @@ data class ActionArg(
 )
 
 /**
- * Sources for IDE plugin integration.
- */
-@Serializable
-enum class ActionApiSource {
-    @SerialName("selection")
-    Selection,
-
-    @SerialName("clipboard")
-    Clipboard,
-
-    @SerialName("dialog")
-    Dialog,
-}
-
-/**
  * Targets for IDE plugin integration output routing.
  */
 @Serializable
@@ -151,6 +136,7 @@ enum class ActionApiTarget {
  */
 @Serializable
 data class ActionApi(
-    val args: Map<String, ActionApiSource> = emptyMap(),
+    val input: String? = null,
     val output: ActionApiTarget = ActionApiTarget.Replace,
+    val args: Map<String, String> = emptyMap(),
 )

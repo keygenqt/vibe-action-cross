@@ -70,7 +70,23 @@ class ActionRepository(
     }
 
     /**
-     * Executes an action with arguments resolved from IDE sources (selection, clipboard).
+     * Resolves a query type string (e.g. "query|file_path") to a value
+     * from IDE sources. Returns null for "query|image" (CLI handles internally).
+     */
+    private suspend fun resolveQueryValue(queryType: String): String? {
+        return when {
+            queryType.contains("prompt") -> getSuspendValue(env.bridge.sys.getDialogText)
+            queryType.contains("file_path") -> getSuspendValue(env.bridge.sys.getCurrentFilePath)
+            queryType.contains("project_path") -> getSuspendValue(env.bridge.sys.getProjectPath)
+            queryType.contains("line") -> getSuspendValue(env.bridge.sys.getCursorLine)
+            queryType.contains("image") -> null
+            else -> getSuspendValue(env.bridge.sys.getSelectedText)
+        }
+    }
+
+    /**
+     * Executes an action with the query value resolved from IDE sources
+     * based on [ActionApi.input] contract and optional [ActionApi.args].
      */
     suspend fun executeAction(
         action: ActionModel,
@@ -80,34 +96,37 @@ class ActionRepository(
     ) {
         val args = mutableListOf(action.id)
 
-        for (arg in action.args) {
-            val source = action.api.args[arg.name] ?: continue
-            val value: String? = when (source) {
-                ActionApiSource.Selection -> getSuspendValue(env.bridge.sys.getSelectedText)
-                ActionApiSource.Clipboard -> getSuspendValue(env.bridge.sys.getClipboardText)
-                ActionApiSource.Dialog -> getSuspendValue(env.bridge.sys.getDialogText)
+        // 1. Resolve api.input → positional arg (skip if null — no input needed)
+        val input = action.api.input
+        if (input != null) {
+            val inputValue = resolveQueryValue(input)
+            if (inputValue.isNullOrEmpty() && !input.contains("image")) {
+                onCancel.invoke()
+                return
             }
+            if (!inputValue.isNullOrEmpty()) {
+                args.add(inputValue)
+            }
+        }
 
-            if (value.isNullOrEmpty()) continue
+        // 2. Resolve api.args → --flag value pairs
+        for ((name, queryType) in action.api.args) {
+            val value = resolveQueryValue(queryType) ?: continue
+            if (value.isEmpty()) continue
 
-            val flag = if (arg.short != null) "-${arg.short}" else "--${arg.name}"
+            val arg = action.args.find { it.name == name }
+            val flag = if (arg?.short != null) "-${arg.short}" else "--${name}"
 
-            when (arg.input) {
+            when (arg?.input) {
                 "bool" -> {
                     val isTrue = value.lowercase() in listOf("true", "yes", "да", "1")
                     if (isTrue) args.add(flag)
                 }
-
                 else -> {
                     args.add(flag)
                     args.add(value)
                 }
             }
-        }
-
-        if (args.size == 1 && action.api.args.isNotEmpty()) {
-            onCancel.invoke()
-            return
         }
 
         val newCode = commandProvider.execute(args)

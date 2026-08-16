@@ -180,6 +180,18 @@ function activate(context) {
           const editor = vscode.window.activeTextEditor
           return editor ? editor.document.getText(editor.selection) : ""
         },
+        getCurrentFilePath: () => {
+          const editor = vscode.window.activeTextEditor
+          return editor ? editor.document.fileName : null
+        },
+        getProjectPath: () => {
+          const folder = vscode.workspace.workspaceFolders?.[0]
+          return folder ? folder.uri.fsPath : null
+        },
+        getCursorLine: () => {
+          const editor = vscode.window.activeTextEditor
+          return editor ? String(editor.selection.active.line + 1) : null
+        },
         getDialogText: async () => {
           const result = await vscode.window.showInputBox({})
           return result === undefined ? null : result

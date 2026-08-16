@@ -103,6 +103,21 @@ interface SysBridge {
     val getDialogText: (((String?) -> Unit) -> Unit)?
 
     /**
+     * Retrieves the path of the currently active file in the editor.
+     */
+    val getCurrentFilePath: (((String?) -> Unit) -> Unit)?
+
+    /**
+     * Retrieves the root path of the current project/workspace.
+     */
+    val getProjectPath: (((String?) -> Unit) -> Unit)?
+
+    /**
+     * Retrieves the current cursor line number (1-indexed) in the active editor.
+     */
+    val getCursorLine: (((String?) -> Unit) -> Unit)?
+
+    /**
      * Writes the given string to the system clipboard.
      */
     val setClipboardText: ((String) -> Unit)?
