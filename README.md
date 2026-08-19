@@ -94,5 +94,5 @@ code --install-extension dist/vibe-action-0.0.5.vsix
 2. Go to `Settings/Preferences` -> `Plugins`.
 3. Click the gear icon (`⚙️`) in the top-right corner of the Plugins window.
 4. Select **Install Plugin from Disk...**.
-5. Navigate to the `dist/` directory and select `vibe-action-plugin-0.0.5.zip`.
+5. Navigate to the `dist/` directory and select `vibe-action-0.0.5.zip`.
 6. Restart IntelliJ IDEA when prompted.

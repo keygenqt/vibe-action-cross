@@ -16,7 +16,7 @@ plugins {
 
 tasks {
     buildPlugin {
-        archiveBaseName.set("vibe-action-plugin")
+        archiveBaseName.set("vibe-action")
     }
 }
 

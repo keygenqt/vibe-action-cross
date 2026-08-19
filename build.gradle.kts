@@ -1,4 +1,5 @@
 plugins {
+    id("base")
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinJvm) apply false
@@ -42,6 +43,18 @@ val packageExtension = tasks.register<Exec>("packageExtension") {
     mustRunAfter(":plugin-ui:webApp:copyWebAppBundle")
 
     workingDir = layout.projectDirectory.dir("plugin-vscode").asFile
+
+    // Everything that ends up inside the .vsix: extension sources, the web
+    // bundle, .vscodeignore, README, package.json, ... node_modules is owned
+    // by installDeps and *.vsix is this task's own output, so exclude both.
+    inputs.files(fileTree(layout.projectDirectory.dir("plugin-vscode")) {
+        exclude("node_modules/**")
+        exclude("*.vsix")
+    })
+    // The produced .vsix (stays next to package.json until copied to dist).
+    outputs.files(fileTree(layout.projectDirectory.dir("plugin-vscode")) {
+        include("*.vsix")
+    })
 
     if (System.getProperty("os.name").lowercase().contains("windows")) {
         commandLine("npm.cmd", "run", "package")
@@ -88,4 +101,14 @@ val buildAll = tasks.register<Copy>("buildAll") {
 
     // Gather everything in the root dist folder
     into(layout.projectDirectory.dir("dist"))
+}
+
+/**
+ * Deletes build output and VSIX artifacts.
+ */
+tasks.named<Delete>("clean") {
+    delete(layout.projectDirectory.dir("dist"))
+    delete(fileTree(layout.projectDirectory.dir("plugin-vscode")) {
+        include("*.vsix")
+    })
 }
