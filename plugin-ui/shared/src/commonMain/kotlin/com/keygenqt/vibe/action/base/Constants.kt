@@ -8,30 +8,25 @@ package com.keygenqt.vibe.action.base
  * Shared build/version metadata, referenced across views (e.g. About screen).
  */
 object Constants {
-    const val VERSION = "0.0.4"
+    const val VERSION = "0.0.5"
     const val AUTHOR = "Vitaliy Zarubin (keygenqt)"
 
     val ACTION_TEMPLATE = """
-        name: {name}
+        # Link: https://vibe-action.keygenqt.com/docs/action-structure.html
+        
+        version: 0.0.1
+        
+        name: my-action
         about: Short description
-        # notify: true
-
-        # args:
-        #   - name: input
-        #     short: i
-        #     input: string
-        #     help: Input text
-        #     default: 'default'
-
+        
         api:
-          output: dialog  # replace | clipboard | dialog
-          # args:
-          #   input: selection
-
+          output: dialog # replace, clipboard, dialog
+          input: query|prompt # raw (select), prompt, file_path, project_path, line, image
+          
         actions:
           - tag: tag_step1
-            run: value  # cmd | value | tiny | small | medium | large | vision
-            expect: string  # string | list
-            action: Hello, World!
+            run: small # cmd | value | small | medium | large | vision | tiny
+            expect: string # string | list
+            action: Greet the user {query|prompt}
     """.trimIndent()
 }
