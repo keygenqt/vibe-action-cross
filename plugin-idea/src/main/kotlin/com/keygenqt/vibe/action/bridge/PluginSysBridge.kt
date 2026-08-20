@@ -77,14 +77,22 @@ class PluginSysBridge(val project: Project) : SysBridge {
 
     /**
      * Invokes a native IntelliJ OK/Cancel confirmation dialog.
+     * Uses invokeLater — the dialog is async, the callback fires on EDT
+     * after the user responds. Must not block the process reader thread.
      */
     override val showConfirmDialog: ((title: String, message: String, onResult: (Boolean) -> Unit) -> Unit) =
         { title, message, onResult ->
-            onResult(
-                MessageDialogBuilder.okCancel(title, message)
-                    .icon(Messages.getQuestionIcon())
-                    .ask(project),
-            )
+            ApplicationManager.getApplication().invokeLater {
+                if (project.isDisposed) {
+                    onResult(false)
+                    return@invokeLater
+                }
+                onResult(
+                    MessageDialogBuilder.okCancel(title, message)
+                        .icon(Messages.getQuestionIcon())
+                        .ask(project),
+                )
+            }
         }
 
     /**
@@ -115,7 +123,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
      * is the fence (a callback racing on the reader thread may still slip
      * through — CommandProvider guards those with isActive).
      */
-    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int, Pair<String, String>) -> Unit) -> CliProcess) =
+    override val runCli: ((args: List<String>, onEvent: (String, (String) -> Unit) -> Unit, onDone: (Int, Pair<String, String>) -> Unit) -> CliProcess) =
         { args, onEvent, onDone ->
             val commandLine = if (SystemInfo.isUnix) {
                 val shell = System.getenv("SHELL")?.takeIf { it.isNotBlank() } ?: "/bin/sh"
@@ -148,6 +156,21 @@ class PluginSysBridge(val project: Project) : SysBridge {
             val stdoutBuffer = StringBuilder()
             val outputBuffer = Pair(StringBuilder(), StringBuilder())
 
+            // Stdin writer — available from the first event, eliminating the
+            // race between event delivery and process handle assignment.
+            val writeStdinFn: (String) -> Unit = { text ->
+                if (!finished.get()) {
+                    try {
+                        handler.processInput?.let { stream ->
+                            stream.write(text.toByteArray())
+                            stream.flush()
+                        }
+                    } catch (e: Exception) {
+                        // Process may have already exited — broken pipe must not crash.
+                    }
+                }
+            }
+
             handler.addProcessListener(object : ProcessListener {
                 override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
                     if (finished.get()) return
@@ -159,7 +182,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
                             while (idx >= 0) {
                                 val line = stdoutBuffer.substring(0, idx).trimEnd('\r')
                                 stdoutBuffer.delete(0, idx + 1)
-                                if (line.isNotBlank()) onEvent(line)
+                                if (line.isNotBlank()) onEvent(line, writeStdinFn)
                                 idx = stdoutBuffer.indexOf('\n')
                             }
                         }
@@ -174,7 +197,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
                     // Canceled — the caller explicitly asked for silence.
                     if (!finished.compareAndSet(false, true)) return
                     val tail = stdoutBuffer.toString().trim()
-                    if (tail.isNotEmpty()) onEvent(tail)
+                    if (tail.isNotEmpty()) onEvent(tail, writeStdinFn)
                     onDone(event.exitCode, Pair(outputBuffer.first.toString(), outputBuffer.second.toString()))
                 }
             })
@@ -186,6 +209,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
                         handler.destroyProcess()
                     }
                 }
+                override fun writeStdin(text: String) = writeStdinFn(text)
             }
         }
 

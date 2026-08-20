@@ -174,6 +174,16 @@ function activate(context) {
             return false
           }
         },
+        writeStdin: (procId, text) => {
+          const proc = cliProcesses.get(procId)
+          if (proc && proc.stdin) {
+            try {
+              proc.stdin.write(text)
+            } catch (e) {
+              console.error('writeStdin failed:', e)
+            }
+          }
+        },
         getClipboardText: () => vscode.env.clipboard.readText(),
         setClipboardText: (text) => vscode.env.clipboard.writeText(text),
         getSelectedText: () => {

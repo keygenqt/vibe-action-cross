@@ -93,6 +93,17 @@ sealed class CommandOutput {
     ) : CommandOutput()
 
     /**
+     * Confirm request from the CLI. The plugin shows a yes/no dialog
+     * and writes the response to the process's stdin.
+     */
+    @Serializable
+    @SerialName("confirm")
+    data class Confirm(
+        val tag: String,
+        val display: String,
+    ) : CommandOutput()
+
+    /**
      * Fallback for unrecognized messages, preserves raw `level` and `value`.
      */
     @Serializable

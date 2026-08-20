@@ -30,7 +30,13 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
      * per-invocation targets ("cliEvent:<id>"/"cliDone:<id>"), so events of
      * a superseded process can never reach a newer invocation's callbacks.
      */
-    private val cliCallbacks = mutableMapOf<String, Pair<(String) -> Unit, (Int, Pair<String, String>) -> Unit>>()
+    private data class CliInvocation(
+        val onEvent: (String, (String) -> Unit) -> Unit,
+        val writeStdin: (String) -> Unit,
+        val onDone: (Int, Pair<String, String>) -> Unit,
+    )
+
+    private val cliCallbacks = mutableMapOf<String, CliInvocation>()
     private var cliSeq = 0
 
     init {
@@ -39,9 +45,12 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
             val data = event.asDynamic().data
             val target = data?.target as? String ?: return@addEventListener
             when {
-                target.startsWith(CLI_EVENT_TARGET) ->
-                    cliCallbacks[target.removePrefix(CLI_EVENT_TARGET)]
-                        ?.first?.invoke(data.args[0] as String)
+                target.startsWith(CLI_EVENT_TARGET) -> {
+                    val id = target.removePrefix(CLI_EVENT_TARGET)
+                    cliCallbacks[id]?.let { inv ->
+                        inv.onEvent(data.args[0] as String, inv.writeStdin)
+                    }
+                }
 
                 target.startsWith(CLI_DONE_TARGET) -> {
                     val id = target.removePrefix(CLI_DONE_TARGET)
@@ -52,7 +61,7 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
                         streamsDynamic.first as String,
                         streamsDynamic.second as String
                     )
-                    cliCallbacks.remove(id)?.second?.invoke(exitCode, streams)
+                    cliCallbacks.remove(id)?.onDone?.invoke(exitCode, streams)
                 }
             }
         })
@@ -67,7 +76,7 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     }
 
     /**
-     * Shows a modal Yes/No confirm dialog via vscode.window.showWarningMessage.
+     * Shows a modal Yes/No confirm dialog via vscode.window.showInformationMessage.
      */
     override val showConfirmDialog: ((title: String, message: String, onResult: (Boolean) -> Unit) -> Unit) =
         { title, message, onResult ->
@@ -103,14 +112,21 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
      * Events stream back through postMessage with per-invocation targets
      * ("cliEvent:<id>"/"cliDone:<id>"), so concurrent calls never cross-talk.
      *
+     * onEvent receives a stdin writer alongside each line — the writer
+     * is available from the first event, eliminating the race between
+     * event delivery and process handle assignment.
+     *
      * [CliProcess.cancel] drops the callback slot and asks the extension host
      * to kill the child process ("killCli"); the resulting late "cliDone:<id>"
      * finds no slot and is ignored.
      */
-    override val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int, Pair<String, String>) -> Unit) -> CliProcess) =
+    override val runCli: ((args: List<String>, onEvent: (String, (String) -> Unit) -> Unit, onDone: (Int, Pair<String, String>) -> Unit) -> CliProcess) =
         { args, onEvent, onDone ->
             val id = (cliSeq++).toString()
-            cliCallbacks[id] = onEvent to onDone
+            val writeStdin: (String) -> Unit = { text ->
+                api.send("writeStdin", arrayOf(id, text))
+            }
+            cliCallbacks[id] = CliInvocation(onEvent, writeStdin, onDone)
             api.send(
                 "runCli",
                 arrayOf(args.toTypedArray(), "$CLI_EVENT_TARGET$id", "$CLI_DONE_TARGET$id", id),
@@ -122,6 +138,7 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
                         api.send("killCli", arrayOf(id))
                     }
                 }
+                override fun writeStdin(text: String) = writeStdin(text)
             }
         }
 

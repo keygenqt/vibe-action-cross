@@ -17,6 +17,16 @@ interface CliProcess {
      * tolerate that, see CommandProvider's isActive guards).
      */
     fun cancel()
+
+    /**
+     * Writes text to the process's stdin. Used by the confirm protocol:
+     * the CLI outputs a confirm request, blocks on stdin, and the plugin
+     * writes the response ("true\n" / "false\n") via this method.
+     *
+     * Must be safe to call after the process has exited (silently no-op
+     * or log — broken pipe must not crash the plugin).
+     */
+    fun writeStdin(text: String)
 }
 
 /**
@@ -50,6 +60,10 @@ interface SysBridge {
      * Runs vibe-action CLI with given arguments.
      * Streams NDJSON lines to onEvent, exit code to onDone.
      *
+     * onEvent receives a stdin writer alongside each line — the writer
+     * is available from the first event, eliminating the race between
+     * event delivery and process handle assignment.
+     *
      * Concurrent calls ARE supported: every invocation owns an independent
      * event stream — events of an older process are never delivered to a
      * newer invocation's callbacks. Starting a new process supersedes the
@@ -61,7 +75,7 @@ interface SysBridge {
      * process exits. A process terminated because a newer CLI instance
      * superseded it exits with code 130 (see RunGuard::EXIT_SUPERSEDED).
      */
-    val runCli: ((args: List<String>, onEvent: (String) -> Unit, onDone: (Int, Pair<String, String>) -> Unit) -> CliProcess)?
+    val runCli: ((args: List<String>, onEvent: (String, (String) -> Unit) -> Unit, onDone: (Int, Pair<String, String>) -> Unit) -> CliProcess)?
 
     /**
      * Opens a file in the platform's native editor/viewer.

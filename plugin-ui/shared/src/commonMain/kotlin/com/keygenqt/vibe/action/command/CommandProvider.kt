@@ -7,7 +7,6 @@ package com.keygenqt.vibe.action.command
 import co.touchlab.kermit.Logger
 import com.keygenqt.vibe.action.bridge.CliProcess
 import com.keygenqt.vibe.action.bridge.Environment
-import com.keygenqt.vibe.action.command.CommandProvider.Companion.EXIT_SUPERSEDED
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
@@ -56,10 +55,25 @@ class CommandProvider(
                     try {
                         val process = runCli(
                             args,
-                            { line ->
+                            { line, writeStdin ->
                                 // Late events may race with cancellation — drop them.
                                 logger.d(line)
-                                if (cont.isActive) result.add(parseCommandOutputLine(line))
+                                if (!cont.isActive) return@runCli
+                                val parsed = parseCommandOutputLine(line)
+                                if (parsed is CommandOutput.Confirm) {
+                                    val dialog = env.bridge.sys.showConfirmDialog
+                                    if (dialog != null) {
+                                        dialog.invoke(parsed.tag, parsed.display) { confirmed ->
+                                            runCatching {
+                                                writeStdin(if (confirmed) "true\n" else "false\n")
+                                            }.onFailure { logger.w(it) { "Failed to write stdin" } }
+                                        }
+                                    } else {
+                                        runCatching { writeStdin("false\n") }
+                                            .onFailure { logger.w(it) { "Failed to write stdin" } }
+                                    }
+                                }
+                                result.add(parsed)
                             },
                             { exitCode, streams ->
                                 if (cont.isActive) {
