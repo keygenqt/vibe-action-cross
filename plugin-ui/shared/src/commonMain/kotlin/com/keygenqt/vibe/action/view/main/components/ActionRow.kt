@@ -43,7 +43,10 @@ fun ActionRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = onToggleExpanded)
+                .clickable(
+                    enabled = action.yamlPath != null,
+                    onClick = onToggleExpanded,
+                )
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = if (showDescriptions) Alignment.Top else Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -90,7 +93,7 @@ fun ActionRow(
             }
         }
 
-        if (expanded) {
+        if (expanded && action.yamlPath != null) {
             ActionRowExpandedMenu(
                 onEdit = onEdit,
                 onDelete = onDelete,

@@ -28,7 +28,6 @@ class ActionRepository(
      * Loads the full action list with resolved YAML paths for custom actions.
      */
     suspend fun loadActions(): List<ActionModel> {
-        val dir = toolingRepository.getStatus(forceRefresh = true)?.actionsPath
         val fileExists = env.bridge.sys.fileExists
 
         val actionOutputs = commandProvider.actions()
@@ -46,26 +45,20 @@ class ActionRepository(
                     args = out.args,
                     api = out.api!!,
                     yamlPath = null,
-                )
+                ) to out.yamlPath
             }
 
-        return if (fileExists != null && dir != null) {
+        return if (fileExists != null) {
             coroutineScope {
-                models.map { action ->
+                models.map { (action, cliPath) ->
                     async {
-                        val yaml = "$dir/${action.id}.yaml"
-                        val yml = "$dir/${action.id}.yml"
-                        val path = when {
-                            fileExists(yaml) -> yaml
-                            fileExists(yml) -> yml
-                            else -> null
-                        }
+                        val path = cliPath?.takeIf { fileExists(it) }
                         action.copy(yamlPath = path)
                     }
                 }.awaitAll()
             }
         } else {
-            models
+            models.map { it.first }
         }
     }
 

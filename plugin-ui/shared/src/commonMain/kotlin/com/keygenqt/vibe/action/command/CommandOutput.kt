@@ -57,6 +57,8 @@ sealed class CommandOutput {
         val customActionsApi: Int,
         val version: String,
         val config: String,
+        @SerialName("flow_version")
+        val flowVersion: String = "0.0.1",
         @SerialName("actions_path")
         val actionsPath: String,
         @SerialName("config_path")
@@ -77,6 +79,8 @@ sealed class CommandOutput {
         val api: ActionApi? = null,
         @SerialName("is_custom")
         val isCustom: Boolean = false,
+        @SerialName("yaml_path")
+        val yamlPath: String? = null,
     ) : CommandOutput()
 
     /**

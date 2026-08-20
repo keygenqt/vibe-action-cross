@@ -5,11 +5,7 @@
 package com.keygenqt.vibe.action.view.main
 
 import co.touchlab.kermit.Logger
-import com.keygenqt.vibe.action.base.AppEvent
-import com.keygenqt.vibe.action.base.BaseViewModel
-import com.keygenqt.vibe.action.base.Constants
-import com.keygenqt.vibe.action.base.EventBus
-import com.keygenqt.vibe.action.base.PreferenceKey
+import com.keygenqt.vibe.action.base.*
 import com.keygenqt.vibe.action.bridge.Environment
 import com.keygenqt.vibe.action.bridge.PlatformView
 import com.keygenqt.vibe.action.command.ActionRepository
@@ -18,13 +14,7 @@ import com.keygenqt.vibe.action.models.ActionModel
 import com.keygenqt.vibe.action.models.NotificationModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -159,6 +149,7 @@ class MainViewModel(
                         logger.d { "Cache cleared event received, refreshing actions." }
                         refresh()
                     }
+
                     AppEvent.DescriptionsVisibilityChanged -> {
                         logger.d { "Descriptions visibility changed, reloading preference." }
                         loadShowDescriptions()
@@ -361,6 +352,7 @@ class MainViewModel(
         viewModelScope.launch {
             val status = toolingRepository.getStatus()
             val basePath = status?.actionsPath
+            val flowVersion = status?.flowVersion?.removePrefix("v") ?: "0.0.1"
             val sys = env.bridge.sys
 
             if (basePath == null) {
@@ -379,7 +371,11 @@ class MainViewModel(
                 fullPath = "$basePath$separator$fileName.yaml"
             }
 
-            sys.writeFile?.invoke(fullPath, Constants.ACTION_TEMPLATE.replace("{name}", fileName))
+            sys.writeFile?.invoke(
+                fullPath, Constants.ACTION_TEMPLATE
+                    .replace("{version}", flowVersion)
+                    .replace("{name}", fileName)
+            )
             sys.openFile?.invoke(fullPath)
         }
         refresh(showLoader = false)

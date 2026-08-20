@@ -14,9 +14,9 @@ object Constants {
     val ACTION_TEMPLATE = """
         # Link: https://vibe-action.keygenqt.com/docs/action-structure.html
         
-        version: 0.0.1
+        version: {version}
         
-        name: my-action
+        name: {name}
         about: Short description
         
         api:
