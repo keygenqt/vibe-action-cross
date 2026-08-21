@@ -372,9 +372,10 @@ class MainViewModel(
             }
 
             sys.writeFile?.invoke(
-                fullPath, Constants.ACTION_TEMPLATE
+                fullPath,
+                Constants.ACTION_TEMPLATE
                     .replace("{version}", flowVersion)
-                    .replace("{name}", fileName)
+                    .replace("{name}", fileName),
             )
             sys.openFile?.invoke(fullPath)
         }

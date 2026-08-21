@@ -39,40 +39,49 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     private val cliCallbacks = mutableMapOf<String, CliInvocation>()
     private var cliSeq = 0
 
-    init {
-        // Route CLI events from the extension host to the owning invocation.
-        window.addEventListener("message", { event ->
-            val data = event.asDynamic().data
-            val target = data?.target as? String ?: return@addEventListener
-            when {
-                target.startsWith(CLI_EVENT_TARGET) -> {
-                    val id = target.removePrefix(CLI_EVENT_TARGET)
-                    cliCallbacks[id]?.let { inv ->
-                        inv.onEvent(data.args[0] as String, inv.writeStdin)
-                    }
-                }
-
-                target.startsWith(CLI_DONE_TARGET) -> {
-                    val id = target.removePrefix(CLI_DONE_TARGET)
-                    // Remove before notifying — the slot is freed even if onDone throws.
-                    val exitCode = data.args[0] as Int
-                    val streamsDynamic = data.args[1]
-                    val streams = Pair(
-                        streamsDynamic.first as String,
-                        streamsDynamic.second as String
-                    )
-                    cliCallbacks.remove(id)?.onDone?.invoke(exitCode, streams)
+    private val cliEventListener: (Event) -> Unit = listener@{ event ->
+        val data = event.asDynamic().data
+        val target = data?.target as? String ?: return@listener
+        when {
+            target.startsWith(CLI_EVENT_TARGET) -> {
+                val id = target.removePrefix(CLI_EVENT_TARGET)
+                cliCallbacks[id]?.let { inv ->
+                    inv.onEvent(data.args[0] as String, inv.writeStdin)
                 }
             }
-        })
+
+            target.startsWith(CLI_DONE_TARGET) -> {
+                val id = target.removePrefix(CLI_DONE_TARGET)
+                val exitCode = data.args[0] as Int
+                val streamsDynamic = data.args[1]
+                val streams = Pair(
+                    streamsDynamic.first as String,
+                    streamsDynamic.second as String,
+                )
+                cliCallbacks.remove(id)?.onDone?.invoke(exitCode, streams)
+            }
+        }
+    }
+
+    init {
+        window.addEventListener("message", cliEventListener)
+    }
+
+    /**
+     * Removes the global message listener and drops pending callbacks.
+     * Call when the owning composition leaves (DisposableEffect.onDispose).
+     */
+    fun dispose() {
+        window.removeEventListener("message", cliEventListener)
+        cliCallbacks.clear()
+        api.dispose()
     }
 
     /**
      * Shows a native VS Code toast via vscode.window.showInformationMessage.
      */
     override val showNotification: ((title: String, message: String) -> Unit) = { title, message ->
-        val t = if (title.endsWith(".")) title else "$title."
-        api.send("showInformationMessage", arrayOf("$t\n\n$message"))
+        api.send("showInformationMessage", arrayOf("$title — $message"))
     }
 
     /**
@@ -230,7 +239,7 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
      * Prompts the user for text input via a dialog and passes it to the provided handler.
      */
     override val getDialogText: (((String?) -> Unit) -> Unit) = { onResult ->
-        api.send("getDialogText", emptyArray()) { res ->
+        api.send("getDialogText", EMPTY_ARGS) { res ->
             onResult(res as String?)
         }
     }

@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.keygenqt.vibe.action.LocalPluginKoin
 import com.keygenqt.vibe.action.bridge.ViewEnvironment
 import com.keygenqt.vibe.action.components.LoadingLottieAnimation
 import com.keygenqt.vibe.action.components.NotificationHandler
@@ -21,7 +22,6 @@ import com.keygenqt.vibe.action.view.settings.components.AppearanceSection
 import com.keygenqt.vibe.action.view.settings.components.CacheSection
 import com.keygenqt.vibe.action.view.settings.components.ConfigSection
 import com.keygenqt.vibe.action.view.settings.components.StatusSection
-import org.koin.compose.koinInject
 
 /**
  * Settings screen — CLI status snapshot plus two housekeeping actions.
@@ -29,7 +29,7 @@ import org.koin.compose.koinInject
  */
 @Composable
 fun SettingsView(
-    viewModel: SettingsViewModel = koinInject<SettingsViewModel>(),
+    viewModel: SettingsViewModel = LocalPluginKoin.current.get<SettingsViewModel>(),
     onBack: () -> Unit = {},
 ) {
     val env = ViewEnvironment.current

@@ -25,14 +25,21 @@ class VsCodeApi(private val raw: dynamic) {
     /** Requests whose callback was never invoked — logged periodically, not on every send. */
     private var lastPendingLogSize = 0
 
+    private val messageListener: (Event) -> Unit = listener@{ event: Event ->
+        val data = event.asDynamic().data ?: return@listener
+        val requestId = data.requestId.unsafeCast<Int?>()
+        if (requestId != null) {
+            pendingCallbacks.remove(requestId)?.invoke(data.result)
+        }
+    }
+
     init {
-        window.addEventListener("message", { event: Event ->
-            val data = event.asDynamic().data ?: return@addEventListener
-            val requestId = data.requestId.unsafeCast<Int?>()
-            if (requestId != null) {
-                pendingCallbacks.remove(requestId)?.invoke(data.result)
-            }
-        })
+        window.addEventListener("message", messageListener)
+    }
+
+    fun dispose() {
+        window.removeEventListener("message", messageListener)
+        pendingCallbacks.clear()
     }
 
     /**

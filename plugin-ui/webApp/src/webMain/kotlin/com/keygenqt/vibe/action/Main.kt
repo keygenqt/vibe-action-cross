@@ -8,11 +8,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeViewport
 import com.keygenqt.vibe.action.bridge.VsCodeEnvironment
+import com.keygenqt.vibe.action.bridge.VsCodeSysBridge
 
 /**
  * VS Code extension entry point (JS target) — mounts the Compose Multiplatform UI
@@ -22,10 +25,15 @@ import com.keygenqt.vibe.action.bridge.VsCodeEnvironment
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
     ComposeViewport {
-        val isVsCode = isVsCodeWebView()
-        val vsCodeApi: dynamic = if (isVsCode) js("acquireVsCodeApi()") else null
+        val isVsCode = remember { isVsCodeWebView() }
         if (isVsCode) {
-            InitApp(VsCodeEnvironment(vsCodeApi)) {
+            val environment = remember { VsCodeEnvironment(js("acquireVsCodeApi()")) }
+            DisposableEffect(environment) {
+                onDispose {
+                    (environment.bridge.sys as? VsCodeSysBridge)?.dispose()
+                }
+            }
+            InitApp(environment) {
                 RootAppDispatcher()
             }
         } else {

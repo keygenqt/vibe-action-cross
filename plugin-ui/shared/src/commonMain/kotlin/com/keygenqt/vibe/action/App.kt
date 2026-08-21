@@ -6,7 +6,9 @@ package com.keygenqt.vibe.action
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -26,8 +28,8 @@ import com.keygenqt.vibe.action.view.about.AboutView
 import com.keygenqt.vibe.action.view.main.MainView
 import com.keygenqt.vibe.action.view.settings.SettingsView
 import kotlinx.serialization.Serializable
-import org.koin.compose.KoinApplication
-import org.koin.dsl.KoinConfiguration
+import org.koin.core.Koin
+import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 
 /**
@@ -46,7 +48,21 @@ sealed interface AppRoute : NavKey {
 }
 
 /**
- * Bootstraps the environment and provides it to the composable tree via ViewEnvironment and Koin.
+ * Per-window Koin instance, provided by InitApp. Bypasses koin-compose's
+ * CompositionLocal API entirely (LocalKoinApplication/LocalKoinScopeContext
+ * are deprecated/reshuffled between versions and resolve through the shared
+ * default context — the root cause of cross-window ViewModel sharing).
+ */
+val LocalPluginKoin = staticCompositionLocalOf<Koin> { error("Koin is not provided") }
+
+/**
+ * Bootstraps the environment and provides it to the composable tree via
+ * ViewEnvironment and an isolated per-window Koin.
+ *
+ * koinApplication {} creates a standalone instance that is never registered
+ * in any shared/default context, so two IntelliJ project windows get fully
+ * independent singletons — ViewModels, EventBus, repositories.
+ * The instance is closed when the composition leaves.
  */
 @Composable
 fun InitApp(
@@ -60,23 +76,26 @@ fun InitApp(
             }
         }
     }
+    val koinApp = remember(environment) {
+        koinApplication {
+            logger(KermitKoinLogger(Logger.withTag("Koin")))
+            modules(
+                appModule(),
+                module {
+                    single { environment }
+                },
+            )
+        }
+    }
+    DisposableEffect(koinApp) {
+        onDispose { koinApp.close() }
+    }
     CompositionLocalProvider(
         LocalLifecycleOwner provides lifecycleOwner,
         ViewEnvironment provides environment,
+        LocalPluginKoin provides koinApp.koin,
     ) {
-        KoinApplication(
-            KoinConfiguration {
-                logger(KermitKoinLogger(Logger.withTag("Koin")))
-                modules(
-                    appModule,
-                    module {
-                        single { environment }
-                    },
-                )
-            },
-        ) {
-            ViewScope().composable()
-        }
+        ViewScope().composable()
     }
 }
 

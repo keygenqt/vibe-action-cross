@@ -66,15 +66,13 @@ class ActionRepository(
      * Resolves a query type string (e.g. "query|file_path") to a value
      * from IDE sources. Returns null for "query|image" (CLI handles internally).
      */
-    private suspend fun resolveQueryValue(queryType: String): String? {
-        return when {
-            queryType.contains("prompt") -> getSuspendValue(env.bridge.sys.getDialogText)
-            queryType.contains("file_path") -> getSuspendValue(env.bridge.sys.getCurrentFilePath)
-            queryType.contains("project_path") -> getSuspendValue(env.bridge.sys.getProjectPath)
-            queryType.contains("line") -> getSuspendValue(env.bridge.sys.getCursorLine)
-            queryType.contains("image") -> null
-            else -> getSuspendValue(env.bridge.sys.getSelectedText)
-        }
+    private suspend fun resolveQueryValue(queryType: String): String? = when {
+        queryType.contains("prompt") -> getSuspendValue(env.bridge.sys.getDialogText)
+        queryType.contains("file_path") -> getSuspendValue(env.bridge.sys.getCurrentFilePath)
+        queryType.contains("project_path") -> getSuspendValue(env.bridge.sys.getProjectPath)
+        queryType.contains("line") -> getSuspendValue(env.bridge.sys.getCursorLine)
+        queryType.contains("image") -> null
+        else -> getSuspendValue(env.bridge.sys.getSelectedText)
     }
 
     /**
@@ -108,7 +106,7 @@ class ActionRepository(
             if (value.isEmpty()) continue
 
             val arg = action.args.find { it.name == name }
-            val flag = if (arg?.short != null) "-${arg.short}" else "--${name}"
+            val flag = if (arg?.short != null) "-${arg.short}" else "--$name"
 
             when (arg?.input) {
                 "bool" -> {

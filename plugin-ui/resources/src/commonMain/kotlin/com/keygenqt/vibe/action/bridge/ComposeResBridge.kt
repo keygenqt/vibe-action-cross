@@ -21,8 +21,8 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_de
 import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_favorite
 import vibe_action_cross.plugin_ui.resources.generated.resources.app_icon
 import vibe_action_cross.plugin_ui.resources.generated.resources.architecture_diagram
-import vibe_action_cross.plugin_ui.resources.generated.resources.common_error_load
 import vibe_action_cross.plugin_ui.resources.generated.resources.common_custom
+import vibe_action_cross.plugin_ui.resources.generated.resources.common_error_load
 import vibe_action_cross.plugin_ui.resources.generated.resources.common_refresh
 import vibe_action_cross.plugin_ui.resources.generated.resources.delete_action_message
 import vibe_action_cross.plugin_ui.resources.generated.resources.delete_action_title

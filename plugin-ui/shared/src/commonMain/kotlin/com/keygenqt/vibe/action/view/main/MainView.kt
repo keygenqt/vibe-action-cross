@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.keygenqt.vibe.action.LocalPluginKoin
 import com.keygenqt.vibe.action.bridge.ViewEnvironment
 import com.keygenqt.vibe.action.components.ErrorStateView
 import com.keygenqt.vibe.action.components.LoadingLottieAnimation
@@ -26,14 +27,13 @@ import com.keygenqt.vibe.action.resources.PlatformString
 import com.keygenqt.vibe.action.theme.ColorsApp
 import com.keygenqt.vibe.action.view.main.components.ActionsList
 import com.keygenqt.vibe.action.view.main.components.MainHeaderActions
-import org.koin.compose.koinInject
 
 /**
  * Root Actions screen — list of runnable flows, entry point of the plugin.
  */
 @Composable
 fun MainView(
-    viewModel: MainViewModel = koinInject<MainViewModel>(),
+    viewModel: MainViewModel = LocalPluginKoin.current.get<MainViewModel>(),
     onNavigateToSettings: () -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
 ) {

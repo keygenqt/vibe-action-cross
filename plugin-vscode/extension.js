@@ -1,7 +1,7 @@
 const vscode = require('vscode')
 const path = require('path')
 const fs = require('fs')
-const { spawn } = require('child_process')
+const {spawn} = require('child_process')
 
 /**
  * Path to vibe-action CLI binary. Uses VIBE_ACTION_CLI_PATH env var for debug builds,
@@ -21,65 +21,63 @@ const cliProcesses = new Map()
  * procId registers the process for killCli; concurrent invocations are independent.
  */
 function handleRunCli(webview, args, requestId) {
-  const [cmdArgs, eventTarget, doneTarget, procId] = args
+    const [cmdArgs, eventTarget, doneTarget, procId] = args
 
-  const proc = spawn(cliPath, cmdArgs || [], {
-    env: { ...process.env, VIBE_LOG_TYPE: 'json' }
-  })
-
-  if (procId != null) {
-    cliProcesses.set(procId, proc)
-  }
-
-  // Guard against double onDone: Node fires both 'error' and 'close'
-  // when spawn fails (e.g. ENOENT — CLI not found in PATH).
-  let finished = false
-  const done = (code, stdout = '', stderr = '') => {
-    if (finished) return
-    finished = true
-    if (procId != null) cliProcesses.delete(procId)
-    webview.postMessage({ target: doneTarget, args: [code, { first: stdout, second: stderr }] })
-  }
-
-  let buffer = ''
-  let stdoutAccumulator = ''
-  let stderrAccumulator = ''
-
-  proc.stdout.on('data', data => {
-    const str = data.toString()
-    buffer += str
-    stdoutAccumulator += str
-    const lines = buffer.split(/\r?\n/)
-    buffer = lines.pop() || ''
-    lines.filter(l => l.trim()).forEach(line => {
-      webview.postMessage({ target: eventTarget, args: [line] })
+    const proc = spawn(cliPath, cmdArgs || [], {
+        env: {...process.env, VIBE_LOG_TYPE: 'json'}
     })
-  })
 
-  proc.stderr.on('data', data => {
-    const str = data.toString()
-    stderrAccumulator += str
-    console.error('stderr:', str)
-  })
-
-  proc.on('error', err => {
-    console.error('spawn error:', err)
-    done(-1, '', err.message)
-  })
-
-  proc.on('close', code => {
-    // Flush the trailing line if the process didn't terminate it with \n
-    const tail = buffer.trim()
-    if (tail) {
-      webview.postMessage({ target: eventTarget, args: [tail] })
+    if (procId != null) {
+        cliProcesses.set(procId, proc)
     }
-    // 'close' may fire with null code when the process was killed by a signal
-    done(code == null ? -1 : code, stdoutAccumulator, stderrAccumulator)
-  })
 
-  if (requestId != null) {
-    webview.postMessage({ requestId, result: true })
-  }
+    // Guard against double onDone: Node fires both 'error' and 'close'
+    // when spawn fails (e.g. ENOENT — CLI not found in PATH).
+    let finished = false
+    const done = (code, stdout = '', stderr = '') => {
+        if (finished) return
+        finished = true
+        if (procId != null) cliProcesses.delete(procId)
+        void webview.postMessage({target: doneTarget, args: [code, {first: stdout, second: stderr}]})
+    }
+
+    let buffer = ''
+    let stdoutAccumulator = ''
+    let stderrAccumulator = ''
+
+    proc.stdout.on('data', data => {
+        const str = data.toString()
+        buffer += str
+        stdoutAccumulator += str
+        const lines = buffer.split(/\r?\n/)
+        buffer = lines.pop() || ''
+        lines.filter(l => l.trim()).forEach(line => {
+            void webview.postMessage({target: eventTarget, args: [line]})
+        })
+    })
+
+    proc.stderr.on('data', data => {
+        stderrAccumulator += data.toString()
+    })
+
+    proc.on('error', err => {
+        console.error('spawn error:', err)
+        done(-1, '', err.message)
+    })
+
+    proc.on('close', code => {
+        // Flush the trailing line if the process didn't terminate it with \n
+        const tail = buffer.trim()
+        if (tail) {
+            void webview.postMessage({target: eventTarget, args: [tail]})
+        }
+        // 'close' may fire with null code when the process was killed by a signal
+        done(code == null ? -1 : code, stdoutAccumulator, stderrAccumulator)
+    })
+
+    if (requestId != null) {
+        void webview.postMessage({requestId, result: true})
+    }
 }
 
 /**
@@ -88,12 +86,12 @@ function handleRunCli(webview, args, requestId) {
  * callback slot by then, so the resulting late cliDone is ignored there.
  */
 function handleKillCli(args) {
-  const [procId] = args || []
-  const proc = cliProcesses.get(procId)
-  if (proc) {
-    cliProcesses.delete(procId)
-    proc.kill()
-  }
+    const [procId] = args || []
+    const proc = cliProcesses.get(procId)
+    if (proc) {
+        cliProcesses.delete(procId)
+        proc.kill()
+    }
 }
 
 /**
@@ -101,169 +99,179 @@ function handleKillCli(args) {
  * preview: false ensures it opens a new tab instead of replacing an unpinned one.
  */
 async function handleOpenFile(webview, args, requestId) {
-  const [filePath] = args
-  const uri = vscode.Uri.file(filePath)
+    const [filePath] = args
+    const uri = vscode.Uri.file(filePath)
 
-  try {
-    await vscode.window.showTextDocument(uri, { preview: false })
-    if (requestId != null) webview.postMessage({ requestId, result: true })
-  } catch (err) {
-    console.error('openFile failed:', err)
-    if (requestId != null) webview.postMessage({ requestId, result: false })
-  }
+    try {
+        await vscode.window.showTextDocument(uri, {preview: false})
+        if (requestId != null) void webview.postMessage({requestId, result: true})
+    } catch (err) {
+        console.error('openFile failed:', err)
+        if (requestId != null) void webview.postMessage({requestId, result: false})
+    }
 }
 
 /**
  * Registers the sidebar Webview provider and bridges postMessage to VS Code API.
  */
 function activate(context) {
-  const bundleDir = path.join(context.extensionPath, 'productionExecutable')
+    const bundleDir = path.join(context.extensionPath, 'productionExecutable')
 
-  const provider = {
-    resolveWebviewView(webviewView) {
-      webviewView.webview.options = {
-        enableScripts: true,
-        localResourceRoots: [vscode.Uri.file(bundleDir)],
-      }
-
-      const file = path.join(bundleDir, 'index.html')
-      const baseUri = webviewView.webview.asWebviewUri(vscode.Uri.file(bundleDir)) + '/'
-      webviewView.webview.html = fs
-          .readFileSync(file, 'utf8')
-          .replace('<head>', `<head><base href="${baseUri}"><script>window.__vscodeLang = "${(vscode.env.language)}";</script>`)
-          .replace(/(href|src)="([^"]+)"/g, (match, attr, rel) => {
-            if (/^(https?:|data:|#)/.test(rel)) return match
-            const uri = webviewView.webview.asWebviewUri(vscode.Uri.file(path.join(bundleDir, rel)))
-            return `${attr}="${uri}"`
-          })
-
-      const themeListener = vscode.window.onDidChangeActiveColorTheme(() => {
-        webviewView.webview.postMessage({ target: 'themeChanged' })
-      })
-      context.subscriptions.push(themeListener)
-      webviewView.onDidDispose(() => {
-        themeListener.dispose()
-        for (const proc of cliProcesses.values()) proc.kill()
-        cliProcesses.clear()
-      })
-
-      const handlers = {
-        loadPreference: (key) => {
-          // VS Code returns undefined if the key doesn't exist.
-          // We return null to map correctly to Kotlin's String?
-          const val = context.globalState.get(key)
-          return val === undefined ? null : val
-        },
-        savePreference: (key, value) => {
-          return context.globalState.update(key, value)
-        },
-        writeFile: (p, content) => {
-          try {
-            fs.writeFileSync(p, content, 'utf8')
-            return true
-          } catch (e) {
-            return false
-          }
-        },
-        fileExists: (p) => fs.existsSync(p),
-        deleteFile: (p) => {
-          try {
-            fs.unlinkSync(p)
-            return true
-          } catch (e) {
-            return false
-          }
-        },
-        writeStdin: (procId, text) => {
-          const proc = cliProcesses.get(procId)
-          if (proc && proc.stdin) {
-            try {
-              proc.stdin.write(text)
-            } catch (e) {
-              console.error('writeStdin failed:', e)
+    const provider = {
+        resolveWebviewView(webviewView) {
+            webviewView.webview.options = {
+                enableScripts: true,
+                localResourceRoots: [vscode.Uri.file(bundleDir)],
             }
-          }
-        },
-        getClipboardText: () => vscode.env.clipboard.readText(),
-        setClipboardText: (text) => vscode.env.clipboard.writeText(text),
-        getSelectedText: () => {
-          const editor = vscode.window.activeTextEditor
-          return editor ? editor.document.getText(editor.selection) : ""
-        },
-        getCurrentFilePath: () => {
-          const editor = vscode.window.activeTextEditor
-          return editor ? editor.document.fileName : null
-        },
-        getProjectPath: () => {
-          const folder = vscode.workspace.workspaceFolders?.[0]
-          return folder ? folder.uri.fsPath : null
-        },
-        getCursorLine: () => {
-          const editor = vscode.window.activeTextEditor
-          return editor ? String(editor.selection.active.line + 1) : null
-        },
-        getDialogText: async () => {
-          const result = await vscode.window.showInputBox({})
-          return result === undefined ? null : result
-        },
-        showTextDialog: async (title, text) => {
-          const safeTitle = title.toLowerCase().replace(/\s+/g, '-')
-          const uri = vscode.Uri.parse(`untitled:${safeTitle}.txt`)
-          const doc = await vscode.workspace.openTextDocument(uri)
-          const editor = await vscode.window.showTextDocument(doc)
-          await editor.edit(editBuilder => {
-            const firstLine = doc.lineAt(0)
-            const lastLine = doc.lineAt(doc.lineCount - 1)
-            const range = new vscode.Range(firstLine.range.start, lastLine.range.end)
-            editBuilder.replace(range, text)
-          })
-        },
-        replaceSelectedText: async (newText) => {
-          const editor = vscode.window.activeTextEditor
-          if (editor && typeof newText === 'string') {
-            await editor.edit(editBuilder => {
-              editBuilder.replace(editor.selection, newText)
+
+            const file = path.join(bundleDir, 'index.html')
+            const baseUri = webviewView.webview.asWebviewUri(vscode.Uri.file(bundleDir)) + '/'
+            webviewView.webview.html = fs
+                .readFileSync(file, 'utf8')
+                .replace('<head>', `<head><base href="${baseUri}"><script>window.__vscodeLang = "${(vscode.env.language)}";</script>`)
+                .replace(/(href|src)="([^"]+)"/g, (match, attr, rel) => {
+                    if (/^(https?:|data:|#)/.test(rel)) return match
+                    const uri = webviewView.webview.asWebviewUri(vscode.Uri.file(path.join(bundleDir, rel)))
+                    return `${attr}="${uri}"`
+                })
+
+            const themeListener = vscode.window.onDidChangeActiveColorTheme(() => {
+                void webviewView.webview.postMessage({target: 'themeChanged'})
             })
-          }
-        }
-      }
+            context.subscriptions.push(themeListener)
+            webviewView.onDidDispose(() => {
+                themeListener.dispose()
+                for (const proc of cliProcesses.values()) proc.kill()
+                cliProcesses.clear()
+            })
 
-      webviewView.webview.onDidReceiveMessage(async message => {
-        const { target, args, requestId } = message
+            const handlers = {
+                loadPreference: (key) => {
+                    // VS Code returns undefined if the key doesn't exist.
+                    // We return null to map correctly to Kotlin's String?
+                    const val = context.globalState.get(key)
+                    return val === undefined ? null : val
+                },
+                savePreference: (key, value) => {
+                    return context.globalState.update(key, value)
+                },
+                writeFile: (p, content) => {
+                    try {
+                        fs.writeFileSync(p, content, 'utf8')
+                        return true
+                    } catch (e) {
+                        return false
+                    }
+                },
+                fileExists: (p) => fs.existsSync(p),
+                deleteFile: (p) => {
+                    try {
+                        fs.unlinkSync(p)
+                        return true
+                    } catch (e) {
+                        return false
+                    }
+                },
+                writeStdin: (procId, text) => {
+                    const proc = cliProcesses.get(procId)
+                    if (proc && proc.stdin) {
+                        try {
+                            proc.stdin.write(text)
+                        } catch (e) {
+                            console.error('writeStdin failed:', e)
+                        }
+                    }
+                },
+                getClipboardText: () => vscode.env.clipboard.readText(),
+                setClipboardText: (text) => vscode.env.clipboard.writeText(text),
+                getSelectedText: () => {
+                    const editor = vscode.window.activeTextEditor
+                    return editor ? editor.document.getText(editor.selection) : null
+                },
+                getCurrentFilePath: () => {
+                    const editor = vscode.window.activeTextEditor
+                    return editor ? editor.document.fileName : null
+                },
+                getProjectPath: () => {
+                    const folder = vscode.workspace.workspaceFolders?.[0]
+                    return folder ? folder.uri.fsPath : null
+                },
+                getCursorLine: () => {
+                    const editor = vscode.window.activeTextEditor
+                    return editor ? String(editor.selection.active.line + 1) : null
+                },
+                getDialogText: async () => {
+                    const result = await vscode.window.showInputBox({})
+                    return result === undefined ? null : result
+                },
+                showTextDialog: async (title, text) => {
+                    const safeTitle = title.toLowerCase().replace(/\s+/g, '-')
+                    const uri = vscode.Uri.parse(`untitled:${safeTitle}.txt`)
+                    const doc = await vscode.workspace.openTextDocument(uri)
+                    const editor = await vscode.window.showTextDocument(doc)
+                    await editor.edit(editBuilder => {
+                        const firstLine = doc.lineAt(0)
+                        const lastLine = doc.lineAt(doc.lineCount - 1)
+                        const range = new vscode.Range(firstLine.range.start, lastLine.range.end)
+                        editBuilder.replace(range, text)
+                    })
+                },
+                replaceSelectedText: async (newText) => {
+                    const editor = vscode.window.activeTextEditor
+                    if (editor && typeof newText === 'string') {
+                        await editor.edit(editBuilder => {
+                            editBuilder.replace(editor.selection, newText)
+                        })
+                    }
+                },
+                showInformationMessage: (/** @type {string} */ message, /** @type {any[]} */ ...rest) =>
+                    vscode.window.showInformationMessage(message, ...rest),
+            }
 
-        if (target === 'runCli') return handleRunCli(webviewView.webview, args, requestId)
-        if (target === 'killCli') return handleKillCli(args)
-        if (target === 'openFile') return handleOpenFile(webviewView.webview, args, requestId)
+            webviewView.webview.onDidReceiveMessage(async message => {
+                const {target, args, requestId} = message
 
-        const handler = handlers[target]
-        if (handler) {
-          const result = await handler(...args)
-          if (requestId != null) {
-            webviewView.webview.postMessage({ requestId, result })
-          }
-          return
-        }
+                if (target === 'runCli') return handleRunCli(webviewView.webview, args, requestId)
+                if (target === 'killCli') return handleKillCli(args)
+                if (target === 'openFile') return handleOpenFile(webviewView.webview, args, requestId)
 
-        if (typeof vscode.window[target] === 'function') {
-          const result = await vscode.window[target](...args)
-          if (requestId != null) {
-            webviewView.webview.postMessage({ requestId, result })
-          }
-        }
-      })
-    },
-  }
+                const handler = handlers[target]
+                if (handler) {
+                    try {
+                        const result = await handler(...args)
+                        if (requestId != null) {
+                            await webviewView.webview.postMessage({
+                                requestId,
+                                result: result === undefined ? null : result
+                            })
+                        }
+                    } catch (err) {
+                        console.error(`handler "${target}" failed:`, err)
+                        if (requestId != null) {
+                            await webviewView.webview.postMessage({requestId, result: null})
+                        }
+                    }
+                    return
+                }
+                console.error('unknown target:', target)
+                if (requestId != null) {
+                    await webviewView.webview.postMessage({requestId, result: null})
+                }
+            })
+        },
+    }
 
-  context.subscriptions.push(
-      vscode.window.registerWebviewViewProvider('vibe-action.sidebarView', provider, {
-        webviewOptions: { retainContextWhenHidden: true },
-      })
-  )
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider('vibe-action.sidebarView', provider, {
+            webviewOptions: {retainContextWhenHidden: true},
+        })
+    )
 }
 
 /**
  * Cleanup on extension deactivation.
  */
-function deactivate() {}
+function deactivate() {
+}
 
-module.exports = { activate, deactivate }
+module.exports = {activate, deactivate}

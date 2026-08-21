@@ -4,6 +4,7 @@
  */
 package com.keygenqt.vibe.action.bridge
 
+import com.intellij.DynamicBundle
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
@@ -40,7 +41,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.AbstractAction
 import javax.swing.Action
 import javax.swing.JComponent
-import com.intellij.DynamicBundle
 
 /**
  * IntelliJ plugin implementation of the system bridge.
@@ -69,10 +69,12 @@ class PluginSysBridge(val project: Project) : SysBridge {
      * Dispatches a native IntelliJ notification balloon.
      */
     override val showNotification: ((title: String, message: String) -> Unit) = { title, message ->
-        NotificationGroupManager.getInstance()
-            .getNotificationGroup("com.keygenqt.vibe.action")
-            .createNotification(title, message, NotificationType.INFORMATION)
-            .notify(project)
+        if (!project.isDisposed) {
+            NotificationGroupManager.getInstance()
+                .getNotificationGroup("com.keygenqt.vibe.action")
+                .createNotification(title, message, NotificationType.INFORMATION)
+                .notify(project)
+        }
     }
 
     /**
@@ -161,7 +163,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
             val writeStdinFn: (String) -> Unit = { text ->
                 if (!finished.get()) {
                     try {
-                        handler.processInput?.let { stream ->
+                        handler.processInput.let { stream ->
                             stream.write(text.toByteArray())
                             stream.flush()
                         }
@@ -186,6 +188,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
                                 idx = stdoutBuffer.indexOf('\n')
                             }
                         }
+
                         ProcessOutputTypes.STDERR -> {
                             outputBuffer.second.append(event.text)
                         }
@@ -209,6 +212,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
                         handler.destroyProcess()
                     }
                 }
+
                 override fun writeStdin(text: String) = writeStdinFn(text)
             }
         }
@@ -220,12 +224,10 @@ class PluginSysBridge(val project: Project) : SysBridge {
      */
     override val openFile: ((path: String) -> Unit) = { path ->
         ApplicationManager.getApplication().executeOnPooledThread {
-            val file = LocalFileSystem.getInstance().refreshAndFindFileByPath(path)
-            if (file != null) {
-                ApplicationManager.getApplication().invokeLater {
-                    FileEditorManager.getInstance(project).openFile(file, true)
-                }
-            }
+            val file = LocalFileSystem.getInstance().refreshAndFindFileByPath(path) ?: return@executeOnPooledThread
+            ApplicationManager.getApplication().invokeLater({
+                FileEditorManager.getInstance(project).openFile(file, true)
+            }, project.disposed)
         }
     }
 
@@ -284,7 +286,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
                 project,
                 MessageBundle.message("dialog.input.message"),
                 MessageBundle.message("dialog.input.title"),
-                Messages.getQuestionIcon()
+                Messages.getQuestionIcon(),
             )
             onResult(text)
         }
@@ -295,8 +297,11 @@ class PluginSysBridge(val project: Project) : SysBridge {
      */
     override val getCurrentFilePath: (((String?) -> Unit) -> Unit) = { onResult ->
         ApplicationManager.getApplication().invokeLater {
-            val file = FileEditorManager.getInstance(project).selectedEditor?.file
-            onResult(file?.path)
+            if (project.isDisposed) {
+                onResult(null)
+                return@invokeLater
+            }
+            onResult(FileEditorManager.getInstance(project).selectedEditor?.file?.path)
         }
     }
 
@@ -322,6 +327,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
     /**
      * Writes the given text to the system clipboard.
      */
+    @Suppress("UsePropertyAccessSyntax")
     override val setClipboardText: ((String) -> Unit) = { newText ->
         ApplicationManager.getApplication().invokeLater {
             CopyPasteManager.getInstance().setContents(StringSelection(newText))
@@ -347,6 +353,7 @@ class PluginSysBridge(val project: Project) : SysBridge {
     /**
      * Callback that shows a multiline text dialog/output to the user.
      */
+    @Suppress("UsePropertyAccessSyntax")
     override val showTextDialog: ((title: String, text: String) -> Unit) = { title, text ->
         ApplicationManager.getApplication().invokeLater {
             object : DialogWrapper(project) {

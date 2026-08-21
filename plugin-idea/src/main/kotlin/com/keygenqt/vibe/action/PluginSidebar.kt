@@ -4,6 +4,7 @@
  */
 package com.keygenqt.vibe.action
 
+import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.awt.ComposePanel
 import com.intellij.openapi.project.Project
@@ -12,8 +13,6 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import com.keygenqt.vibe.action.InitApp
-import com.keygenqt.vibe.action.RootAppDispatcher
 import com.keygenqt.vibe.action.bridge.PluginEnvironment
 import com.keygenqt.vibe.action.resources.IconBundle
 import org.jetbrains.jewel.bridge.theme.SwingBridgeTheme
@@ -58,10 +57,9 @@ class PluginSidebar : ToolWindowFactory {
          */
         private val composePanel = ComposePanel().apply {
             setContent {
+                val environment = remember(project) { PluginEnvironment(project) }
                 SwingBridgeTheme {
-                    InitApp(
-                        PluginEnvironment(project),
-                    ) {
+                    InitApp(environment) {
                         RootAppDispatcher()
                     }
                 }

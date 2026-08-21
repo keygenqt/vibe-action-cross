@@ -17,7 +17,7 @@ import org.koin.dsl.module
 /**
  * Top-level Koin module that aggregates logging and ViewModels.
  */
-val appModule = module {
+fun appModule() = module {
     // Kermit logging
     includes(loggingModule)
 

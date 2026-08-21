@@ -21,16 +21,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.keygenqt.vibe.action.LocalPluginKoin
 import com.keygenqt.vibe.action.base.Constants
 import com.keygenqt.vibe.action.bridge.ViewEnvironment
 import com.keygenqt.vibe.action.components.ScreenScaffold
 import com.keygenqt.vibe.action.resources.PlatformImage
 import com.keygenqt.vibe.action.resources.PlatformString
-import org.koin.compose.koinInject
 
 @Composable
 fun AboutView(
-    viewModel: AboutViewModel = koinInject<AboutViewModel>(),
+    viewModel: AboutViewModel = LocalPluginKoin.current.get<AboutViewModel>(),
     onBack: () -> Unit = {},
 ) {
     val env = ViewEnvironment.current
