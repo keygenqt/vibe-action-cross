@@ -57,6 +57,11 @@ import vibe_action_cross.plugin_ui.resources.generated.resources.settings_status
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_status_version_label
 import vibe_action_cross.plugin_ui.resources.generated.resources.settings_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.sidebar_title
+import vibe_action_cross.plugin_ui.resources.generated.resources.version_banner_open_docs
+import vibe_action_cross.plugin_ui.resources.generated.resources.version_banner_update_cli_desc
+import vibe_action_cross.plugin_ui.resources.generated.resources.version_banner_update_cli_title
+import vibe_action_cross.plugin_ui.resources.generated.resources.version_banner_update_plugin_desc
+import vibe_action_cross.plugin_ui.resources.generated.resources.version_banner_update_plugin_title
 
 /**
  * Compose Multiplatform resource bridge — loads resources via compose.components.resources.
@@ -147,6 +152,13 @@ class ComposeResBridge : ResBridge {
             PlatformString.ActionGroupFavorite -> stringResource(Res.string.action_group_favorite, *values)
             PlatformString.ActionGroupCustom -> stringResource(Res.string.action_group_custom, *values)
             PlatformString.ActionGroupDefault -> stringResource(Res.string.action_group_default, *values)
+
+            // Version Banner
+            PlatformString.BtnOpenDocs -> stringResource(Res.string.version_banner_open_docs, *values)
+            PlatformString.UpdatePluginTitle -> stringResource(Res.string.version_banner_update_plugin_title, *values)
+            PlatformString.UpdatePluginDesc -> stringResource(Res.string.version_banner_update_plugin_desc, *values)
+            PlatformString.UpdateAppCliTitle -> stringResource(Res.string.version_banner_update_cli_title, *values)
+            PlatformString.UpdateAppCliDesc -> stringResource(Res.string.version_banner_update_cli_desc, *values)
         }
     }
 }

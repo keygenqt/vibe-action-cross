@@ -70,4 +70,11 @@ enum class PlatformString {
     NotifCacheCleanedDesc,
     NotifCacheCleanFailedTitle,
     NotifCacheCleanFailedDesc,
+
+    // Version banner
+    BtnOpenDocs,
+    UpdatePluginTitle,
+    UpdatePluginDesc,
+    UpdateAppCliTitle,
+    UpdateAppCliDesc,
 }

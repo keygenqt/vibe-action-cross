@@ -61,4 +61,11 @@
     <string name="action_group_favorite">Favorites</string>
     <string name="action_group_custom">Custom</string>
     <string name="action_group_default">Default</string>
+
+    <!-- Version Banner -->
+    <string name="version_banner_open_docs">Open Docs</string>
+    <string name="version_banner_update_plugin_title">Update Plugin</string>
+    <string name="version_banner_update_plugin_desc">The installed CLI is newer than this plugin supports.</string>
+    <string name="version_banner_update_cli_title">Update CLI</string>
+    <string name="version_banner_update_cli_desc">The installed CLI is older than this plugin requires.</string>
 </resources>

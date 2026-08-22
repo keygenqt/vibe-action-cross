@@ -184,6 +184,7 @@ function activate(context) {
                 },
                 getClipboardText: () => vscode.env.clipboard.readText(),
                 setClipboardText: (text) => vscode.env.clipboard.writeText(text),
+                openUrl: (url) => vscode.env.openExternal(vscode.Uri.parse(url)),
                 getSelectedText: () => {
                     const editor = vscode.window.activeTextEditor
                     return editor ? editor.document.getText(editor.selection) : null

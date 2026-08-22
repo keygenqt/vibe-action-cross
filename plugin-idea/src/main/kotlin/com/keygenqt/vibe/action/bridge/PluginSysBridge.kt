@@ -10,6 +10,7 @@ import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputTypes
+import com.intellij.ide.BrowserUtil
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -228,6 +229,15 @@ class PluginSysBridge(val project: Project) : SysBridge {
             ApplicationManager.getApplication().invokeLater({
                 FileEditorManager.getInstance(project).openFile(file, true)
             }, project.disposed)
+        }
+    }
+
+    /**
+     * Opens a URL in the system default browser via IntelliJ's BrowserUtil.
+     */
+    override val openUrl: ((url: String) -> Unit) = { url ->
+        ApplicationManager.getApplication().invokeLater {
+            BrowserUtil.browse(url)
         }
     }
 

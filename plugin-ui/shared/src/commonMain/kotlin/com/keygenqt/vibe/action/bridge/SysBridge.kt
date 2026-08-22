@@ -83,8 +83,13 @@ interface SysBridge {
     val openFile: ((path: String) -> Unit)?
 
     /**
+     * Opens the given URL in the system default browser.
+     */
+    val openUrl: ((url: String) -> Unit)?
+
+    /**
      * Writes content to a file at the given absolute path.
-     * Creates the file if it does not exist, or overwrites it.
+     * Creates the file if it does not exist, or overwrites.
      */
     val writeFile: (suspend (path: String, content: String) -> Unit)?
 

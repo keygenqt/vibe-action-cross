@@ -61,4 +61,11 @@
     <string name="action_group_favorite">Избранное</string>
     <string name="action_group_custom">Пользовательские</string>
     <string name="action_group_default">По умолчанию</string>
+
+    <!-- Version Banner -->
+    <string name="version_banner_open_docs">Открыть документацию</string>
+    <string name="version_banner_update_plugin_title">Обновить плагин</string>
+    <string name="version_banner_update_plugin_desc">Установленный CLI новее, чем поддерживает этот плагин.</string>
+    <string name="version_banner_update_cli_title">Обновить CLI</string>
+    <string name="version_banner_update_cli_desc">Установленный CLI старше, чем требует этот плагин.</string>
 </resources>

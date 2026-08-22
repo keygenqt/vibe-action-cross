@@ -105,6 +105,13 @@ class PluginResBridge : ResBridge {
             PlatformString.ActionGroupFavorite -> "action.group.favorite"
             PlatformString.ActionGroupCustom -> "action.group.custom"
             PlatformString.ActionGroupDefault -> "action.group.default"
+
+            // Version Banner
+            PlatformString.BtnOpenDocs -> "version.banner.open_docs"
+            PlatformString.UpdatePluginTitle -> "version.banner.update_plugin.title"
+            PlatformString.UpdatePluginDesc -> "version.banner.update_plugin.desc"
+            PlatformString.UpdateAppCliTitle -> "version.banner.update_cli.title"
+            PlatformString.UpdateAppCliDesc -> "version.banner.update_cli.desc"
         }
         MessageBundle.message(bundleKey, *params)
     }

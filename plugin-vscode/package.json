@@ -2,7 +2,7 @@
   "name": "vibe-action",
   "displayName": "Vibe Action",
   "description": "Native VS Code panel for Vibe Action — discover and run YAML-based shell/LLM flows with live feedback, no manual tasks.json setup required.",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "Vitaliy Zarubin",
   "publisher": "keygenqt",
   "icon": "media/app_icon.png",

@@ -160,6 +160,14 @@ class VsCodeSysBridge(private val api: VsCodeApi) : SysBridge {
     }
 
     /**
+     * Opens a URL in the system browser via vscode.env.openExternal.
+     * The extension host converts the URL to vscode.Uri and opens it.
+     */
+    override val openUrl: ((url: String) -> Unit) = { url ->
+        api.send("openUrl", arrayOf(url))
+    }
+
+    /**
      * Writes content to a file via bridge API.
      */
     override val writeFile: (suspend (String, String) -> Unit) = { path, content ->
