@@ -12,6 +12,7 @@ import com.keygenqt.vibe.action.command.ActionRepository
 import com.keygenqt.vibe.action.command.ToolingRepository
 import com.keygenqt.vibe.action.models.ActionModel
 import com.keygenqt.vibe.action.models.NotificationModel
+import com.keygenqt.vibe.action.models.VersionBannerState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -106,6 +107,13 @@ class MainViewModel(
     val errorLoad: StateFlow<Boolean> = _errorLoad.asStateFlow()
 
     /**
+     * Version-sync banner state derived from comparing the installed CLI
+     * version against `Constants.SUPPORTED_CLI_VERSION`.
+     */
+    private val _versionBanner = MutableStateFlow<VersionBannerState>(VersionBannerState.None)
+    val versionBanner: StateFlow<VersionBannerState> = _versionBanner.asStateFlow()
+
+    /**
      * Serializes loadData() calls — init and refresh() must not overlap.
      */
     private val loadMutex = Mutex()
@@ -125,6 +133,7 @@ class MainViewModel(
         listenToEvents()
         loadStarredIds()
         loadShowDescriptions()
+        loadVersionBanner()
     }
 
     /**
@@ -177,6 +186,22 @@ class MainViewModel(
         viewModelScope.launch {
             val str = env.bridge.sys.loadPreference?.invoke(PreferenceKey.ShowDescriptions.name)
             _showDescriptions.value = str?.toBoolean() ?: true
+        }
+    }
+
+    /**
+     * Fetches CLI status and sets the version-sync banner state by comparing
+     * the installed CLI `major.minor` against `Constants.SUPPORTED_CLI_VERSION`.
+     * Patch is ignored. Leaves [VersionBannerState.None] when the CLI is
+     * missing or its version can't be parsed.
+     */
+    private fun loadVersionBanner() {
+        viewModelScope.launch {
+            val status = toolingRepository.getStatus() ?: return@launch
+            _versionBanner.value = VersionBannerState.compare(
+                status.version,
+                Constants.SUPPORTED_CLI_VERSION,
+            )
         }
     }
 

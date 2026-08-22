@@ -27,6 +27,7 @@ fun ActionsList(
     expandedActionId: String?,
     runningActionId: String?,
     showDescriptions: Boolean,
+    showVersionBanner: Boolean,
     onToggleExpanded: (String) -> Unit,
     onRun: (String) -> Unit,
     onEdit: (String) -> Unit,
@@ -38,6 +39,9 @@ fun ActionsList(
     val favorites = actions.filter { it.isStarred }
     val custom = actions.filter { !it.isStarred && it.isCustom }
     val default = actions.filter { !it.isStarred && !it.isCustom }
+    val firstActionId = favorites.firstOrNull()?.id
+        ?: custom.firstOrNull()?.id
+        ?: default.firstOrNull()?.id
 
     Column(modifier = Modifier.fillMaxWidth()) {
         if (favorites.isNotEmpty()) {
@@ -48,6 +52,7 @@ fun ActionsList(
                     expandedActionId = expandedActionId,
                     runningActionId = runningActionId,
                     showDescriptions = showDescriptions,
+                    showTopDivider = showVersionBanner || it.id != firstActionId,
                     onToggleExpanded = onToggleExpanded,
                     onRun = onRun,
                     onEdit = onEdit,
@@ -65,6 +70,7 @@ fun ActionsList(
                     expandedActionId = expandedActionId,
                     runningActionId = runningActionId,
                     showDescriptions = showDescriptions,
+                    showTopDivider = showVersionBanner || it.id != firstActionId,
                     onToggleExpanded = onToggleExpanded,
                     onRun = onRun,
                     onEdit = onEdit,
@@ -83,6 +89,7 @@ fun ActionsList(
                     action = it,
                     expandedActionId = expandedActionId,
                     runningActionId = runningActionId,
+                    showTopDivider = showVersionBanner || it.id != firstActionId,
                     showDescriptions = showDescriptions,
                     onToggleExpanded = onToggleExpanded,
                     onRun = onRun,
@@ -115,6 +122,7 @@ private fun RenderActionRow(
     expandedActionId: String?,
     runningActionId: String?,
     showDescriptions: Boolean,
+    showTopDivider: Boolean,
     onToggleExpanded: (String) -> Unit,
     onRun: (String) -> Unit,
     onEdit: (String) -> Unit,
@@ -127,6 +135,7 @@ private fun RenderActionRow(
         expanded = action.id == expandedActionId,
         isRunning = action.id == runningActionId,
         showDescriptions = showDescriptions,
+        showTopDivider = showTopDivider,
         onToggleExpanded = { onToggleExpanded(action.id) },
         onRun = { onRun(action.id) },
         onEdit = { onEdit(action.id) },

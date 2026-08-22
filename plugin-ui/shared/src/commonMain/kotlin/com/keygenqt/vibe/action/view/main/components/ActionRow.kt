@@ -32,6 +32,7 @@ fun ActionRow(
     expanded: Boolean,
     isRunning: Boolean,
     showDescriptions: Boolean,
+    showTopDivider: Boolean,
     onToggleExpanded: () -> Unit,
     onRun: () -> Unit,
     onEdit: () -> Unit,
@@ -40,6 +41,9 @@ fun ActionRow(
     onToggleStar: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
+        if (showTopDivider) {
+            HorizontalDivider()
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,8 +103,6 @@ fun ActionRow(
                 onDelete = onDelete,
             )
         }
-
-        HorizontalDivider()
     }
 }
 

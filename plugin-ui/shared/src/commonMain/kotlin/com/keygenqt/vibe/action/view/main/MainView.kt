@@ -22,11 +22,13 @@ import com.keygenqt.vibe.action.components.LoadingLottieAnimation
 import com.keygenqt.vibe.action.components.NotificationHandler
 import com.keygenqt.vibe.action.components.ScreenScaffold
 import com.keygenqt.vibe.action.models.ActionModel
+import com.keygenqt.vibe.action.models.VersionBannerState
 import com.keygenqt.vibe.action.resources.PlatformIcon
 import com.keygenqt.vibe.action.resources.PlatformString
 import com.keygenqt.vibe.action.theme.ColorsApp
 import com.keygenqt.vibe.action.view.main.components.ActionsList
 import com.keygenqt.vibe.action.view.main.components.MainHeaderActions
+import com.keygenqt.vibe.action.view.main.components.VersionBanner
 
 /**
  * Root Actions screen — list of runnable flows, entry point of the plugin.
@@ -46,6 +48,7 @@ fun MainView(
     val showDescriptions by viewModel.showDescriptions.collectAsState()
     val actionToDelete by viewModel.actionToDelete.collectAsState()
     val errorLoad by viewModel.errorLoad.collectAsState()
+    val versionBanner by viewModel.versionBanner.collectAsState()
 
     NotificationHandler(
         notification = notification,
@@ -90,11 +93,13 @@ fun MainView(
             if (errorLoad) {
                 ErrorStateView()
             } else {
+                VersionBanner(versionBanner)
                 ActionsList(
                     actions = actions,
                     expandedActionId = expandedActionId,
                     runningActionId = runningActionId,
                     showDescriptions = showDescriptions,
+                    showVersionBanner = versionBanner != VersionBannerState.None,
                     onToggleExpanded = viewModel::toggleExpanded,
                     onRun = viewModel::runAction,
                     onEdit = viewModel::editAction,
