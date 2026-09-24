@@ -147,6 +147,30 @@ enum class ActionApiTarget {
 }
 
 /**
+ * Input sources for the {query} tag, matching the CLI `QueryKey` list.
+ */
+enum class ActionApiInput(val key: String) {
+    Raw("query_raw"),
+    Prompt("query_prompt"),
+    FilePath("query_file_path"),
+    ProjectPath("query_project_path"),
+    Line("query_line"),
+    Image("query_image"),
+    Clipboard("query_clipboard"),
+    ClipboardText("query_clipboard_text"),
+    ClipboardPath("query_clipboard_path"),
+    ClipboardImage("query_clipboard_image");
+
+    companion object {
+        fun fromKey(key: String): ActionApiInput? =
+            entries.firstOrNull { it.key == key }
+        
+        fun isResolvedByCli(key: String): Boolean =
+            listOf(Image, Clipboard, ClipboardText, ClipboardPath, ClipboardImage).map { it.key }.contains(key)
+    }
+}
+
+/**
  * IDE plugin integration metadata.
  */
 @Serializable

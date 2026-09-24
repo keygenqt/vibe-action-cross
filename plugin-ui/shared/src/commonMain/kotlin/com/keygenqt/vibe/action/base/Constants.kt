@@ -8,7 +8,7 @@ package com.keygenqt.vibe.action.base
  * Shared build/version metadata, referenced across views (e.g. About screen).
  */
 object Constants {
-    const val VERSION = "0.0.7"
+    const val VERSION = "0.0.8"
     const val AUTHOR = "Vitaliy Zarubin (keygenqt)"
 
     /**
@@ -16,12 +16,12 @@ object Constants {
      * The version-sync check compares `major.minor` against the installed
      * CLI's `major.minor` (patch is ignored). Bump per CLI release.
      */
-    const val SUPPORTED_CLI_VERSION = "0.2.3"
+    const val SUPPORTED_CLI_VERSION = "0.3.0"
 
     /**
      * Docs opened by the "Update plugin" banner button.
      */
-    const val URL_DOCS_PLUGIN = "https://vibe-action.keygenqt.com/docs/vibe-action-cross.html"
+    const val URL_DOCS_PLUGIN = "https://vibe-action.keygenqt.com/docs/ide-plugin.html"
 
     /**
      * Docs opened by the "Update CLI" banner button.
@@ -31,22 +31,33 @@ object Constants {
     /**
      * Template for custom action configuration.
      */
+    /**
+     * Template for custom action configuration.
+     */
     val ACTION_TEMPLATE = """
-        # Link: https://vibe-action.keygenqt.com/docs/action-structure.html
-        
+        # Link: https://vibe-action.keygenqt.com/docs/pipeline-yaml.md
+
         version: {version}
-        
+
         name: {name}
         about: Short description
-        
+
         api:
           output: dialog # replace, clipboard, dialog
-          input: query|prompt # raw (select), prompt, file_path, project_path, line, image
-          
+          input: query_prompt # query_raw, query_prompt, query_file_path, query_project_path, query_line, query_image
+
         actions:
-          - tag: tag_step1
-            run: small # cmd | value | small | medium | large | vision | tiny
-            expect: string # string | list
-            action: Greet the user {query|prompt}
+          - tag: tag_result
+            run: small # cmd | value | tiny | small | medium | large | vision
+            val:
+              - name: input
+                data: query_prompt
+            action: |
+              [Task]
+              Greet the user and suggest a name for the project.
+              Answer briefly, in one sentence.
+
+              [Input]
+              {input}
     """.trimIndent()
 }

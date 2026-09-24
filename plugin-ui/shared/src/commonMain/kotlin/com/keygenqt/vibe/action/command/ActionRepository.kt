@@ -63,17 +63,24 @@ class ActionRepository(
     }
 
     /**
-     * Resolves a query type string (e.g. "query|file_path") to a value
-     * from IDE sources. Returns null for "query|image" (CLI handles internally).
+     * Resolves a query key to a value from IDE sources.
+     * Returns null for CLI-resolved inputs (image, clipboard) —
+     * the CLI reads them itself.
      */
-    private suspend fun resolveQueryValue(queryType: String): String? = when {
-        queryType.contains("prompt") -> getSuspendValue(env.bridge.sys.getDialogText)
-        queryType.contains("file_path") -> getSuspendValue(env.bridge.sys.getCurrentFilePath)
-        queryType.contains("project_path") -> getSuspendValue(env.bridge.sys.getProjectPath)
-        queryType.contains("line") -> getSuspendValue(env.bridge.sys.getCursorLine)
-        queryType.contains("image") -> null
-        else -> getSuspendValue(env.bridge.sys.getSelectedText)
-    }
+    private suspend fun resolveQueryValue(queryType: String): String? =
+        when (ActionApiInput.fromKey(queryType)) {
+            ActionApiInput.Prompt -> getSuspendValue(env.bridge.sys.getDialogText)
+            ActionApiInput.FilePath -> getSuspendValue(env.bridge.sys.getCurrentFilePath)
+            ActionApiInput.ProjectPath -> getSuspendValue(env.bridge.sys.getProjectPath)
+            ActionApiInput.Line -> getSuspendValue(env.bridge.sys.getCursorLine)
+            ActionApiInput.Image,
+            ActionApiInput.Clipboard,
+            ActionApiInput.ClipboardText,
+            ActionApiInput.ClipboardPath,
+            ActionApiInput.ClipboardImage,
+                -> null
+            else -> getSuspendValue(env.bridge.sys.getSelectedText)
+        }
 
     /**
      * Executes an action with the query value resolved from IDE sources
@@ -91,7 +98,7 @@ class ActionRepository(
         val input = action.api.input
         if (input != null) {
             val inputValue = resolveQueryValue(input)
-            if (inputValue.isNullOrEmpty() && !input.contains("image")) {
+            if (inputValue.isNullOrEmpty() && !ActionApiInput.isResolvedByCli(input)) {
                 onCancel.invoke()
                 return
             }
