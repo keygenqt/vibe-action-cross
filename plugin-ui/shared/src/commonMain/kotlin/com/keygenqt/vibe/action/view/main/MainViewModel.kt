@@ -377,7 +377,7 @@ class MainViewModel(
         viewModelScope.launch {
             val status = toolingRepository.getStatus()
             val basePath = status?.actionsPath
-            val flowVersion = status?.flowVersion?.removePrefix("v") ?: "0.0.1"
+            val pipelineVersion = status?.pipelineVersion?.removePrefix("v") ?: "0.0.2"
             val sys = env.bridge.sys
 
             if (basePath == null) {
@@ -399,7 +399,7 @@ class MainViewModel(
             sys.writeFile?.invoke(
                 fullPath,
                 Constants.ACTION_TEMPLATE
-                    .replace("{version}", flowVersion)
+                    .replace("{version}", pipelineVersion)
                     .replace("{name}", fileName),
             )
             sys.openFile?.invoke(fullPath)

@@ -57,8 +57,8 @@ sealed class CommandOutput {
         val customActionsApi: Int,
         val version: String,
         val config: String,
-        @SerialName("flow_version")
-        val flowVersion: String = "0.0.1",
+        @SerialName("pipeline_version")
+        val pipelineVersion: String = "0.0.2",
         @SerialName("actions_path")
         val actionsPath: String,
         @SerialName("config_path")
