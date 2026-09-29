@@ -31,17 +31,26 @@ class ActionRepository(
         val fileExists = env.bridge.sys.fileExists
 
         val actionOutputs = commandProvider.actions()
-        val models = actionOutputs.filterIsInstance<CommandOutput.Actions>()
-            .filter { it.api != null }
-            .map { out ->
+
+        // Flat (ungrouped) actions plus grouped actions extracted from Groups messages.
+        val entries: List<Pair<String?, CommandOutput.Actions>> =
+            actionOutputs.filterIsInstance<CommandOutput.Actions>().map { null to it } +
+                    actionOutputs.filterIsInstance<CommandOutput.Groups>()
+                        .flatMap { group -> group.actions.map { group.name to it } }
+
+        val models = entries
+            .filter { it.second.api != null }
+            .map { (group, out) ->
                 ActionModel(
-                    id = out.name,
+                    id = if (group != null) "$group/${out.name}" else out.name,
+                    command = if (group != null) listOf(group, out.name) else listOf(out.name),
                     name = out.name
                         .replace("-", " ")
                         .replace("_", " ")
                         .replaceFirstChar { it.uppercase() },
                     description = out.about,
                     isCustom = out.isCustom,
+                    group = group,
                     args = out.args,
                     api = out.api!!,
                     yamlPath = null,
@@ -92,7 +101,8 @@ class ActionRepository(
         onSuccess: () -> Unit,
         onEmpty: () -> Unit,
     ) {
-        val args = mutableListOf(action.id)
+        val args = mutableListOf<String>()
+        args.addAll(action.command)
 
         // 1. Resolve api.input → positional arg (skip if null — no input needed)
         val input = action.api.input

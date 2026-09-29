@@ -37,10 +37,14 @@ fun ActionsList(
 ) {
     val env = ViewEnvironment.current
     val favorites = actions.filter { it.isStarred }
-    val custom = actions.filter { !it.isStarred && it.isCustom }
-    val default = actions.filter { !it.isStarred && !it.isCustom }
+    val custom = actions.filter { !it.isStarred && it.isCustom && it.group == null }
+    val grouped = actions.filter { !it.isStarred && it.group != null }
+    val default = actions.filter { !it.isStarred && !it.isCustom && it.group == null }
+    // Group sections in first-appearance order (CLI order).
+    val groupOrder = grouped.mapNotNull { it.group }.distinct()
     val firstActionId = favorites.firstOrNull()?.id
         ?: custom.firstOrNull()?.id
+        ?: grouped.firstOrNull()?.id
         ?: default.firstOrNull()?.id
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -80,8 +84,26 @@ fun ActionsList(
                 )
             }
         }
+        for (group in groupOrder) {
+            ActionGroupHeader(group.replaceFirstChar { it.uppercase() })
+            grouped.filter { it.group == group }.forEach {
+                RenderActionRow(
+                    action = it,
+                    expandedActionId = expandedActionId,
+                    runningActionId = runningActionId,
+                    showDescriptions = showDescriptions,
+                    showTopDivider = showVersionBanner || it.id != firstActionId,
+                    onToggleExpanded = onToggleExpanded,
+                    onRun = onRun,
+                    onEdit = onEdit,
+                    onCancel = onCancel,
+                    onDelete = onDelete,
+                    onToggleStar = onToggleStar,
+                )
+            }
+        }
         if (default.isNotEmpty()) {
-            if (favorites.isNotEmpty() || custom.isNotEmpty()) {
+            if (favorites.isNotEmpty() || custom.isNotEmpty() || grouped.isNotEmpty()) {
                 ActionGroupHeader(env.bridge.res.string(PlatformString.ActionGroupDefault))
             }
             default.forEach {

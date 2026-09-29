@@ -13,9 +13,11 @@ import com.keygenqt.vibe.action.command.ActionArg
  */
 data class ActionModel(
     val id: String,
+    val command: List<String>,
     val name: String,
     val description: String,
     val isCustom: Boolean,
+    val group: String? = null,
     val yamlPath: String? = null,
     val args: List<ActionArg> = emptyList(),
     val api: ActionApi,

@@ -84,6 +84,18 @@ sealed class CommandOutput {
     ) : CommandOutput()
 
     /**
+     * Group of actions from the CLI help: group name, about text,
+     * and the actions nested under it.
+     */
+    @Serializable
+    @SerialName("groups")
+    data class Groups(
+        val name: String,
+        val about: String,
+        val actions: List<Actions> = emptyList(),
+    ) : CommandOutput()
+
+    /**
      * Final successful result containing the generated text/code message.
      */
     @Serializable
