@@ -2,6 +2,16 @@
 
 All notable changes to Vibe Action will be documented in this file.
 
+## [0.0.9] - 2026-09-29
+
+### ⚡ Refactoring
+
+- Resolve action queries via actionapiinput enum and add source mapping
+
+### 🚀 Features
+
+- Support action groups from CLI
+
 ## [0.0.7] - 2026-08-22
 
 ### 🐛 Fixes
@@ -9,6 +19,10 @@ All notable changes to Vibe Action will be documented in this file.
 - Remove old build
 - Correct plugin archive filename and packaging task dependencies
 - Scope koin per window and dispose vs code bridge listeners
+
+### 📚 Documentation
+
+- Add changelog documenting fixes and features for releases
 
 ### 🚀 Features
 

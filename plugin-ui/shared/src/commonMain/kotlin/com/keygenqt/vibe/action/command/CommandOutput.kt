@@ -171,14 +171,13 @@ enum class ActionApiInput(val key: String) {
     Clipboard("query_clipboard"),
     ClipboardText("query_clipboard_text"),
     ClipboardPath("query_clipboard_path"),
-    ClipboardImage("query_clipboard_image");
+    ClipboardImage("query_clipboard_image"),
+    ;
 
     companion object {
-        fun fromKey(key: String): ActionApiInput? =
-            entries.firstOrNull { it.key == key }
-        
-        fun isResolvedByCli(key: String): Boolean =
-            listOf(Image, Clipboard, ClipboardText, ClipboardPath, ClipboardImage).map { it.key }.contains(key)
+        fun fromKey(key: String): ActionApiInput? = entries.firstOrNull { it.key == key }
+
+        fun isResolvedByCli(key: String): Boolean = listOf(Image, Clipboard, ClipboardText, ClipboardPath, ClipboardImage).map { it.key }.contains(key)
     }
 }
 

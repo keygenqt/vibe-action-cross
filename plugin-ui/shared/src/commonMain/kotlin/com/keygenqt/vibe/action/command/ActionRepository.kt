@@ -35,8 +35,8 @@ class ActionRepository(
         // Flat (ungrouped) actions plus grouped actions extracted from Groups messages.
         val entries: List<Pair<String?, CommandOutput.Actions>> =
             actionOutputs.filterIsInstance<CommandOutput.Actions>().map { null to it } +
-                    actionOutputs.filterIsInstance<CommandOutput.Groups>()
-                        .flatMap { group -> group.actions.map { group.name to it } }
+                actionOutputs.filterIsInstance<CommandOutput.Groups>()
+                    .flatMap { group -> group.actions.map { group.name to it } }
 
         val models = entries
             .filter { it.second.api != null }
@@ -76,20 +76,19 @@ class ActionRepository(
      * Returns null for CLI-resolved inputs (image, clipboard) —
      * the CLI reads them itself.
      */
-    private suspend fun resolveQueryValue(queryType: String): String? =
-        when (ActionApiInput.fromKey(queryType)) {
-            ActionApiInput.Prompt -> getSuspendValue(env.bridge.sys.getDialogText)
-            ActionApiInput.FilePath -> getSuspendValue(env.bridge.sys.getCurrentFilePath)
-            ActionApiInput.ProjectPath -> getSuspendValue(env.bridge.sys.getProjectPath)
-            ActionApiInput.Line -> getSuspendValue(env.bridge.sys.getCursorLine)
-            ActionApiInput.Image,
-            ActionApiInput.Clipboard,
-            ActionApiInput.ClipboardText,
-            ActionApiInput.ClipboardPath,
-            ActionApiInput.ClipboardImage,
-                -> null
-            else -> getSuspendValue(env.bridge.sys.getSelectedText)
-        }
+    private suspend fun resolveQueryValue(queryType: String): String? = when (ActionApiInput.fromKey(queryType)) {
+        ActionApiInput.Prompt -> getSuspendValue(env.bridge.sys.getDialogText)
+        ActionApiInput.FilePath -> getSuspendValue(env.bridge.sys.getCurrentFilePath)
+        ActionApiInput.ProjectPath -> getSuspendValue(env.bridge.sys.getProjectPath)
+        ActionApiInput.Line -> getSuspendValue(env.bridge.sys.getCursorLine)
+        ActionApiInput.Image,
+        ActionApiInput.Clipboard,
+        ActionApiInput.ClipboardText,
+        ActionApiInput.ClipboardPath,
+        ActionApiInput.ClipboardImage,
+        -> null
+        else -> getSuspendValue(env.bridge.sys.getSelectedText)
+    }
 
     /**
      * Executes an action with the query value resolved from IDE sources

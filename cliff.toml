@@ -16,7 +16,7 @@ body = """
 {% endif %}\
 {% for group, commits in commits | group_by(attribute="group") %}
 ### {{ group }}
-{% for commit in commits %}
+{% for commit in commits | unique(attribute="message") %}
   - {{ commit.message | upper_first }}\
 {% if commit.breaking %} **BREAKING**{% endif %}\
 {% endfor %}
@@ -25,6 +25,10 @@ body = """
 trim = true
 
 [git]
+commit_preprocessors = [
+    # GitLab MR merge commits are not conventional — rewrite then skip via chore.
+    { pattern = "^!\\d+ merge", replace = "chore: merge branch" },
+]
 conventional_commits = true
 filter_unconventional = true
 commit_parsers = [
@@ -32,7 +36,9 @@ commit_parsers = [
     { message = "^fix:", group = "🐛 Fixes" },
     { message = "^refactor:", group = "⚡ Refactoring" },
     { message = "^docs:", group = "📚 Documentation" },
+    { message = "^doc:", group = "📚 Documentation" },
     { message = "^perf:", group = "⚡ Performance" },
+    { message = "^test:", group = "🧪 Tests" },
     { message = "^chore:", group = "🔧 Chores", skip = true },
 ]
 filter_commits = true
