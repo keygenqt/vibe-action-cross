@@ -27,7 +27,7 @@ One Kotlin Multiplatform / Compose Multiplatform codebase targets two hosts:
 - **VS Code Extension** — same UI compiled to JS/Wasm, rendered inside the extension's webview
 
 Platform-specific behavior (process execution, native dialogs, resources) goes through a `Bridge`, not `if`/`else`
-branching in shared code. See [`cmp-ide-cross`](https://gitcode.com/keygenqt_vz/cmp-ide-cross)
+branching in shared code. See [`cmp-ide-cross`](https://github.com/keygenqt/cmp-ide-cross)
 for the architectural writeup this project builds on.
 
 ## Preview
