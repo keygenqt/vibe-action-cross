@@ -28,7 +28,9 @@ sealed class VersionBannerState {
 
     companion object {
         /**
-         * Compares two version strings by `major.minor` (patch ignored).
+         * Compares two version strings by `major.minor`.
+         * Patch is ignored: this is a compatibility signal, and by semver
+         * patch releases must not break the plugin-CLI interface.
          * Returns [VersionBannerState.None] if either version can't be parsed.
          */
         fun compare(
