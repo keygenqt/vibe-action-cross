@@ -2,6 +2,12 @@
 
 All notable changes to Vibe Action will be documented in this file.
 
+## [0.0.10] - 2026-10-02
+
+### 🚀 Features
+
+- Up support 0.4.0 vibe-action
+
 ## [0.0.9] - 2026-09-29
 
 ### ⚡ Refactoring
