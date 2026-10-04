@@ -11,9 +11,10 @@
 
     <!-- About screen -->
     <string name="about_title">About</string>
-    <string name="about_description1">This panel is rendered from a single Kotlin Multiplatform / Compose Multiplatform codebase — one UI, two targets: an IntelliJ Platform plugin and a VS Code extension.</string>
-    <string name="about_description2">Platform differences go through a Bridge, not branching logic — native look and feel comes from Jewel inside IntelliJ, and matches VS Code's own theme in its webview.</string>
-    <string name="about_requirement">Requires the vibe-action CLI, installed and available on PATH.</string>
+    <string name="about_description1">Vibe Action is a command router for shell and LLM tasks, configured through YAML pipelines. Every action in this panel is a pipeline — built-in or your own, defined in plain YAML files.</string>
+    <string name="about_description2">The panel discovers all available actions on its own, including custom ones, and runs them with visible feedback — no per-project configuration, no hand-editing tasks.json or External Tools.</string>
+    <string name="about_description3">This plugin and the VS Code extension are built from one codebase, so the panel looks native in both: Jewel-themed inside IntelliJ, and following the editor\'s own theme in VS Code.</string>
+    <string name="about_requirement">Requires the vibe-action CLI installed and available on PATH. It works standalone too — the plugin just removes the friction.</string>
 
     <!-- Settings screen -->
     <string name="settings_title">Settings</string>
@@ -55,12 +56,15 @@
     <!-- Appearance settings -->
     <string name="settings_appearance_title">Appearance</string>
     <string name="settings_appearance_description">Hide the action descriptions to make the list more compact. Only the action names will be shown.</string>
-    <string name="settings_show_descriptions_label">Show action descriptions</string>
+    <string name="settings_show_descriptions_label">Show descriptions</string>
 
     <!-- Actions group -->
     <string name="action_group_favorite">Favorites</string>
     <string name="action_group_custom">Custom</string>
     <string name="action_group_default">Default</string>
+    <string name="action_group_favorite_about">Actions marked by the user for quick access. The section's order is defined by you, not by group composition.</string>
+    <string name="action_group_custom_about">Personal pipelines created manually and not part of any group.</string>
+    <string name="action_group_default_about">Built-in vibe-action actions, available right after installing the CLI.</string>
 
     <!-- Version Banner -->
     <string name="version_banner_open_docs">Open Docs</string>

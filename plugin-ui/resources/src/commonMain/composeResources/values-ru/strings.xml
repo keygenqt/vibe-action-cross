@@ -11,9 +11,10 @@
 
     <!-- About screen -->
     <string name="about_title">О плагине</string>
-    <string name="about_description1">Эта панель отрисовывается из единой кодовой базы Kotlin Multiplatform / Compose Multiplatform — один UI, две платформы: плагин для IntelliJ Platform и расширение для VS Code.</string>
-    <string name="about_description2">Платформенные различия проходят через Bridge, а не через ветвление кода — нативный вид обеспечивает Jewel внутри IntelliJ, а в вебвью VS Code используется её собственная тема.</string>
-    <string name="about_requirement">Требуется CLI vibe-action, установленный и доступный через PATH.</string>
+    <string name="about_description1">Vibe Action — маршрутизатор команд для shell и LLM-задач, настраиваемый через YAML-пайплайны. Каждое действие в панели — это пайплайн: встроенный или ваш собственный, описанный в обычном YAML-файле.</string>
+    <string name="about_description2">Панель сама находит все доступные действия, включая пользовательские, и запускает их с видимой обратной связью — без настройки для каждого проекта и без ручного редактирования tasks.json и External Tools.</string>
+    <string name="about_description3">Этот плагин и расширение VS Code собраны из одной кодовой базы, поэтому панель выглядит нативно в обоих: тема Jewel внутри IntelliJ и собственная тема редактора в VS Code.</string>
+    <string name="about_requirement">Требуется CLI vibe-action, установленный и доступный через PATH. Он работает и сам по себе — плагин лишь убирает лишние шаги.</string>
 
     <!-- Settings screen -->
     <string name="settings_title">Настройки</string>
@@ -55,12 +56,15 @@
     <!-- Appearance settings -->
     <string name="settings_appearance_title">Внешний вид</string>
     <string name="settings_appearance_description">Скройте описания действий, чтобы сделать список более компактным. Будут отображаться только названия действий.</string>
-    <string name="settings_show_descriptions_label">Показывать описания действий</string>
+    <string name="settings_show_descriptions_label">Показывать описания</string>
 
     <!-- Actions group -->
     <string name="action_group_favorite">Избранное</string>
     <string name="action_group_custom">Пользовательские</string>
     <string name="action_group_default">По умолчанию</string>
+    <string name="action_group_favorite_about">Действия, отмеченные пользователем для быстрого доступа. Порядок раздела задается вами, а не составом групп.</string>
+    <string name="action_group_custom_about">Личные пайплайны, созданные вручную и не входящие в группы.</string>
+    <string name="action_group_default_about">Встроенные действия vibe-action, доступные сразу после установки CLI.</string>
 
     <!-- Version Banner -->
     <string name="version_banner_open_docs">Открыть документацию</string>

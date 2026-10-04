@@ -14,11 +14,15 @@ import org.jetbrains.compose.resources.stringResource
 import vibe_action_cross.plugin_ui.resources.generated.resources.Res
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_description1
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_description2
+import vibe_action_cross.plugin_ui.resources.generated.resources.about_description3
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_requirement
 import vibe_action_cross.plugin_ui.resources.generated.resources.about_title
 import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_custom
+import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_custom_about
 import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_default
+import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_default_about
 import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_favorite
+import vibe_action_cross.plugin_ui.resources.generated.resources.action_group_favorite_about
 import vibe_action_cross.plugin_ui.resources.generated.resources.app_icon
 import vibe_action_cross.plugin_ui.resources.generated.resources.architecture_diagram
 import vibe_action_cross.plugin_ui.resources.generated.resources.common_custom
@@ -104,6 +108,7 @@ class ComposeResBridge : ResBridge {
             PlatformString.AboutTitle -> stringResource(Res.string.about_title, *values)
             PlatformString.AboutDescription1 -> stringResource(Res.string.about_description1, *values)
             PlatformString.AboutDescription2 -> stringResource(Res.string.about_description2, *values)
+            PlatformString.AboutDescription3 -> stringResource(Res.string.about_description3, *values)
             PlatformString.AboutRequirement -> stringResource(Res.string.about_requirement, *values)
 
             // Settings screen
@@ -150,8 +155,11 @@ class ComposeResBridge : ResBridge {
 
             // Actions group
             PlatformString.ActionGroupFavorite -> stringResource(Res.string.action_group_favorite, *values)
+            PlatformString.ActionGroupFavoriteAbout -> stringResource(Res.string.action_group_favorite_about, *values)
             PlatformString.ActionGroupCustom -> stringResource(Res.string.action_group_custom, *values)
+            PlatformString.ActionGroupCustomAbout -> stringResource(Res.string.action_group_custom_about, *values)
             PlatformString.ActionGroupDefault -> stringResource(Res.string.action_group_default, *values)
+            PlatformString.ActionGroupDefaultAbout -> stringResource(Res.string.action_group_default_about, *values)
 
             // Version Banner
             PlatformString.BtnOpenDocs -> stringResource(Res.string.version_banner_open_docs, *values)

@@ -35,7 +35,7 @@
         {
           "type": "webview",
           "id": "vibe-action.sidebarView",
-          "name": "Control Dashboard",
+          "name": "",
           "icon": "media/app_icon.svg"
         }
       ]
