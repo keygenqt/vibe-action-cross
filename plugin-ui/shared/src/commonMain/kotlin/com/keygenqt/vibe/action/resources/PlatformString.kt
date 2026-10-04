@@ -22,6 +22,7 @@ enum class PlatformString {
     AboutTitle,
     AboutDescription1,
     AboutDescription2,
+    AboutDescription3,
     AboutRequirement,
 
     // Settings screen
@@ -42,8 +43,11 @@ enum class PlatformString {
 
     // Actions group
     ActionGroupFavorite,
+    ActionGroupFavoriteAbout,
     ActionGroupCustom,
+    ActionGroupCustomAbout,
     ActionGroupDefault,
+    ActionGroupDefaultAbout,
 
     // Common
     CommonRefresh,

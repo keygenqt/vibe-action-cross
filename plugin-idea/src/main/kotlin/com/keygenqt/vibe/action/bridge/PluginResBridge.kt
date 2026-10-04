@@ -57,6 +57,7 @@ class PluginResBridge : ResBridge {
             PlatformString.AboutTitle -> "about.title"
             PlatformString.AboutDescription1 -> "about.description1"
             PlatformString.AboutDescription2 -> "about.description2"
+            PlatformString.AboutDescription3 -> "about.description3"
             PlatformString.AboutRequirement -> "about.requirement"
 
             // Settings screen
@@ -103,8 +104,11 @@ class PluginResBridge : ResBridge {
 
             // Actions Group
             PlatformString.ActionGroupFavorite -> "action.group.favorite"
+            PlatformString.ActionGroupFavoriteAbout -> "action.group.favorite_about"
             PlatformString.ActionGroupCustom -> "action.group.custom"
+            PlatformString.ActionGroupCustomAbout -> "action.group.custom_about"
             PlatformString.ActionGroupDefault -> "action.group.default"
+            PlatformString.ActionGroupDefaultAbout -> "action.group.default_about"
 
             // Version Banner
             PlatformString.BtnOpenDocs -> "version.banner.open_docs"

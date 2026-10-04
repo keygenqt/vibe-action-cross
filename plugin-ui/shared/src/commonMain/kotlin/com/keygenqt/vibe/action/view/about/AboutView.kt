@@ -83,6 +83,12 @@ fun AboutView(
             )
 
             Text(
+                text = env.bridge.res.string(PlatformString.AboutDescription3),
+                fontSize = 13.sp,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+
+            Text(
                 text = env.bridge.res.string(PlatformString.AboutRequirement),
                 fontSize = 13.sp,
                 modifier = Modifier.padding(bottom = 20.dp),
