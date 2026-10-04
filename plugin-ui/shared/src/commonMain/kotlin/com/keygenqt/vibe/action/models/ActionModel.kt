@@ -18,6 +18,7 @@ data class ActionModel(
     val description: String,
     val isCustom: Boolean,
     val group: String? = null,
+    val groupAbout: String? = null,
     val yamlPath: String? = null,
     val args: List<ActionArg> = emptyList(),
     val api: ActionApi,

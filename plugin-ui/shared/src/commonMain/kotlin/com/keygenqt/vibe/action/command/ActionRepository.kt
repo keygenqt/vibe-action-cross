@@ -32,6 +32,10 @@ class ActionRepository(
 
         val actionOutputs = commandProvider.actions()
 
+        // Group name → group about, from Groups messages.
+        val groupAbouts = actionOutputs.filterIsInstance<CommandOutput.Groups>()
+            .associate { it.name to it.about }
+
         // Flat (ungrouped) actions plus grouped actions extracted from Groups messages.
         val entries: List<Pair<String?, CommandOutput.Actions>> =
             actionOutputs.filterIsInstance<CommandOutput.Actions>().map { null to it } +
@@ -51,6 +55,7 @@ class ActionRepository(
                     description = out.about,
                     isCustom = out.isCustom,
                     group = group,
+                    groupAbout = group?.let { groupAbouts[it] },
                     args = out.args,
                     api = out.api!!,
                     yamlPath = null,
