@@ -4,6 +4,9 @@
  */
 package com.keygenqt.vibe.action.view.main.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -51,6 +54,7 @@ fun ActionRow(
                     enabled = action.yamlPath != null,
                     onClick = onToggleExpanded,
                 )
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.06f))
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = if (showDescriptions) Alignment.Top else Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -97,7 +101,11 @@ fun ActionRow(
             }
         }
 
-        if (expanded && action.yamlPath != null) {
+        AnimatedVisibility(
+            visible = expanded && action.yamlPath != null,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+        ) {
             ActionRowExpandedMenu(
                 onEdit = onEdit,
                 onDelete = onDelete,

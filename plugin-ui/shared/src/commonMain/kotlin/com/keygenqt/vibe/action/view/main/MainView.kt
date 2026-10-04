@@ -49,6 +49,7 @@ fun MainView(
     val actionToDelete by viewModel.actionToDelete.collectAsState()
     val errorLoad by viewModel.errorLoad.collectAsState()
     val versionBanner by viewModel.versionBanner.collectAsState()
+    val expandedGroups by viewModel.expandedGroups.collectAsState()
 
     NotificationHandler(
         notification = notification,
@@ -100,6 +101,8 @@ fun MainView(
                     runningActionId = runningActionId,
                     showDescriptions = showDescriptions,
                     showVersionBanner = versionBanner != VersionBannerState.None,
+                    expandedGroups = expandedGroups,
+                    onToggleGroup = viewModel::toggleGroup,
                     onToggleExpanded = viewModel::toggleExpanded,
                     onRun = viewModel::runAction,
                     onEdit = viewModel::editAction,

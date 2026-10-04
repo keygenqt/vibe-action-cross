@@ -10,4 +10,5 @@ package com.keygenqt.vibe.action.base
 enum class PreferenceKey {
     StarredActions,
     ShowDescriptions,
+    ExpandedGroups,
 }

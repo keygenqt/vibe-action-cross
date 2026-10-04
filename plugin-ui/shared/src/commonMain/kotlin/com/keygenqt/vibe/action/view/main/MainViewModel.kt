@@ -77,6 +77,13 @@ class MainViewModel(
     val expandedActionId: StateFlow<String?> = _expandedActionId.asStateFlow()
 
     /**
+     * Keys of expanded list sections (favorite/custom/CLI group names/default).
+     * Empty set — the first-run default — means all sections collapsed.
+     */
+    private val _expandedGroups = MutableStateFlow<Set<String>>(emptySet())
+    val expandedGroups: StateFlow<Set<String>> = _expandedGroups.asStateFlow()
+
+    /**
      * Indicates whether a data loading operation is currently in progress.
      */
     private val _isLoading = MutableStateFlow(false)
@@ -133,6 +140,7 @@ class MainViewModel(
         listenToEvents()
         loadStarredIds()
         loadShowDescriptions()
+        loadExpandedGroups()
         loadVersionBanner()
     }
 
@@ -246,6 +254,27 @@ class MainViewModel(
         starredIds.update { current ->
             val newSet = if (current.contains(id)) current - id else current + id
             env.bridge.sys.savePreference?.invoke(PreferenceKey.StarredActions.name, newSet.joinToString(","))
+            newSet
+        }
+    }
+
+    /**
+     * Loads expanded section keys from persistent storage into the StateFlow.
+     */
+    private fun loadExpandedGroups() {
+        viewModelScope.launch {
+            val str = env.bridge.sys.loadPreference?.invoke(PreferenceKey.ExpandedGroups.name)
+            _expandedGroups.value = str?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
+        }
+    }
+
+    /**
+     * Toggles a section's expanded state and saves the new set to storage.
+     */
+    fun toggleGroup(key: String) {
+        _expandedGroups.update { current ->
+            val newSet = if (current.contains(key)) current - key else current + key
+            env.bridge.sys.savePreference?.invoke(PreferenceKey.ExpandedGroups.name, newSet.joinToString(","))
             newSet
         }
     }
