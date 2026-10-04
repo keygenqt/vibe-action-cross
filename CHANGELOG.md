@@ -2,6 +2,20 @@
 
 All notable changes to Vibe Action will be documented in this file.
 
+## [0.1.0] - 2026-10-04
+
+### ⚡ Refactoring
+
+- Carry group about through models, restore plain scroll scaffold
+
+### 📚 Documentation
+
+- Rewrite About texts around Vibe Action, add section about strings
+
+### 🚀 Features
+
+- Collapsible action sections with persistence, icons and descriptions
+
 ## [0.0.10] - 2026-10-02
 
 ### 🚀 Features
