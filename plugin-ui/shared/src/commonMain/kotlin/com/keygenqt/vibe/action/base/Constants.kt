@@ -8,7 +8,7 @@ package com.keygenqt.vibe.action.base
  * Shared build/version metadata, referenced across views (e.g. About screen).
  */
 object Constants {
-    const val VERSION = "0.0.10"
+    const val VERSION = "0.1.0"
     const val AUTHOR = "Vitaliy Zarubin (keygenqt)"
 
     /**
@@ -16,7 +16,7 @@ object Constants {
      * The version-sync check compares `major.minor` against the installed
      * CLI's `major.minor` (patch is ignored). Bump per CLI release.
      */
-    const val SUPPORTED_CLI_VERSION = "0.4.0"
+    const val SUPPORTED_CLI_VERSION = "0.4.1"
 
     /**
      * Docs opened by the "Update plugin" banner button.
